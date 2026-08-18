@@ -7,6 +7,7 @@ import { useToast } from "./toast"
 import { Flag } from "@opencode-ai/core/flag/flag"
 import { useBindings, useOpencodeModeStack } from "../keymap"
 import { useClipboard } from "../context/clipboard"
+import { studioBorder, useStudioPresentation } from "./studio"
 
 export function Dialog(
   props: ParentProps<{
@@ -16,6 +17,7 @@ export function Dialog(
 ) {
   const dimensions = useTerminalDimensions()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const renderer = useRenderer()
 
   let dismiss = false
@@ -59,6 +61,10 @@ export function Dialog(
         maxWidth={dimensions().width - 2}
         backgroundColor={theme.backgroundPanel}
         paddingTop={1}
+        paddingBottom={studio.enabled() ? 1 : 0}
+        border={studio.enabled() ? ["top", "bottom", "left", "right"] : undefined}
+        borderColor={studio.enabled() ? theme.border : undefined}
+        customBorderChars={studio.enabled() ? studioBorder : undefined}
       >
         {props.children}
       </box>
@@ -203,14 +209,14 @@ export function DialogProvider(props: ParentProps) {
         position="absolute"
         zIndex={3000}
         onMouseDown={(evt: { button: number; preventDefault(): void; stopPropagation(): void }) => {
-          if (!Flag.OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT) return
+          if (!Flag.CODETUTOR_EXPERIMENTAL_DISABLE_COPY_ON_SELECT) return
           if (evt.button !== MouseButton.RIGHT) return
 
           if (!copySelection()) return
           evt.preventDefault()
           evt.stopPropagation()
         }}
-        onMouseUp={!Flag.OPENCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT ? copySelection : undefined}
+        onMouseUp={!Flag.CODETUTOR_EXPERIMENTAL_DISABLE_COPY_ON_SELECT ? copySelection : undefined}
       >
         <Show when={value.stack.length}>
           <Dialog onClose={() => value.clear()} size={value.size}>

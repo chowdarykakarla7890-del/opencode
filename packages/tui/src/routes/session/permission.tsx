@@ -14,8 +14,9 @@ import { Locale } from "../../util/locale"
 import { webSearchProviderLabel } from "../../util/tool-display"
 import { getScrollAcceleration } from "../../util/scroll"
 import { useTuiConfig } from "../../config"
-import { OPENCODE_BASE_MODE, useBindings, useCommandShortcut } from "../../keymap"
+import { CODETUTOR_BASE_MODE, useBindings, useCommandShortcut } from "../../keymap"
 import { usePathFormatter } from "../../context/path-format"
+import { studioBorder, StudioSectionLabel, useStudioPresentation } from "../../ui/studio"
 
 type PermissionStage = "permission" | "always" | "reject"
 
@@ -141,11 +142,11 @@ export function PermissionPrompt(props: { request: PermissionRequest; directory?
           body={
             <Switch>
               <Match when={props.request.always.length === 1 && props.request.always[0] === "*"}>
-                <TextBody title={"This will allow " + props.request.permission + " until OpenCode is restarted."} />
+                <TextBody title={"This will allow " + props.request.permission + " until CodeTutor is restarted."} />
               </Match>
               <Match when={true}>
                 <box paddingLeft={1} gap={1}>
-                  <text fg={theme.textMuted}>This will allow the following patterns until OpenCode is restarted</text>
+                  <text fg={theme.textMuted}>This will allow the following patterns until CodeTutor is restarted</text>
                   <box>
                     <For each={props.request.always}>
                       {(pattern) => (
@@ -443,11 +444,12 @@ export function PermissionPrompt(props: { request: PermissionRequest; directory?
 function RejectPrompt(props: { onConfirm: (message: string) => void; onCancel: () => void }) {
   let input: TextareaRenderable
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const tuiConfig = useTuiConfig()
   const dimensions = useTerminalDimensions()
   const narrow = createMemo(() => dimensions().width < 80)
   useBindings(() => ({
-    mode: OPENCODE_BASE_MODE,
+    mode: CODETUTOR_BASE_MODE,
     commands: [
       {
         name: "app.exit",
@@ -473,17 +475,18 @@ function RejectPrompt(props: { onConfirm: (message: string) => void; onCancel: (
   return (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
+      border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left"]}
       borderColor={theme.error}
-      customBorderChars={SplitBorder.customBorderChars}
+      customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
     >
       <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1}>
+        <StudioSectionLabel label="Permission // rejected" />
         <box flexDirection="row" gap={1} paddingLeft={1}>
           <text fg={theme.error}>{"△"}</text>
           <text fg={theme.text}>Reject permission</text>
         </box>
         <box paddingLeft={1}>
-          <text fg={theme.textMuted}>Tell OpenCode what to do differently</text>
+          <text fg={theme.textMuted}>Tell CodeTutor what to do differently</text>
         </box>
       </box>
       <box
@@ -532,6 +535,7 @@ function Prompt<const T extends Record<string, string>>(props: {
   onSelect: (option: keyof T) => void
 }) {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const tuiConfig = useTuiConfig()
   const dimensions = useTerminalDimensions()
   const keys = Object.keys(props.options) as (keyof T)[]
@@ -543,7 +547,7 @@ function Prompt<const T extends Record<string, string>>(props: {
   const fullscreenHint = useCommandShortcut("permission.prompt.fullscreen")
 
   useBindings(() => ({
-    mode: OPENCODE_BASE_MODE,
+    mode: CODETUTOR_BASE_MODE,
     commands: [
       {
         name: "app.exit",
@@ -632,9 +636,9 @@ function Prompt<const T extends Record<string, string>>(props: {
   const content = () => (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
+      border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left"]}
       borderColor={theme.warning}
-      customBorderChars={SplitBorder.customBorderChars}
+      customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
       {...(store.expanded
         ? { top: dimensions().height * -1 + 1, bottom: 1, left: 2, right: 2, position: "absolute" }
         : {
@@ -647,6 +651,7 @@ function Prompt<const T extends Record<string, string>>(props: {
           })}
     >
       <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1} flexGrow={1}>
+        <StudioSectionLabel label="Permission request" />
         <Show
           when={props.header}
           fallback={
@@ -680,14 +685,28 @@ function Prompt<const T extends Record<string, string>>(props: {
               <box
                 paddingLeft={1}
                 paddingRight={1}
-                backgroundColor={option === store.selected ? theme.warning : theme.backgroundMenu}
+                backgroundColor={
+                  option === store.selected
+                    ? studio.enabled()
+                      ? theme.backgroundElement
+                      : theme.warning
+                    : theme.backgroundMenu
+                }
                 onMouseOver={() => setStore("selected", option)}
                 onMouseUp={() => {
                   setStore("selected", option)
                   props.onSelect(option)
                 }}
               >
-                <text fg={option === store.selected ? selectedForeground(theme, theme.warning) : theme.textMuted}>
+                <text
+                  fg={
+                    option === store.selected
+                      ? studio.enabled()
+                        ? theme.primary
+                        : selectedForeground(theme, theme.warning)
+                      : theme.textMuted
+                  }
+                >
                   {props.options[option]}
                 </text>
               </box>

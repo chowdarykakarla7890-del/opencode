@@ -5,6 +5,8 @@ import { type Config } from "./gen/client/types.gen.js"
 import { OpencodeClient } from "./gen/sdk.gen.js"
 import { wrapClientError } from "./error-interceptor.js"
 export { type Config as OpencodeClientConfig, OpencodeClient }
+export { OpencodeClient as CodeTutorClient }
+export type CodeTutorClientConfig = Config
 
 function pick(value: string | null, fallback?: string) {
   if (!value) return
@@ -17,7 +19,7 @@ function pick(value: string | null, fallback?: string) {
 function rewrite(request: Request, directory?: string) {
   if (request.method !== "GET" && request.method !== "HEAD") return request
 
-  const value = pick(request.headers.get("x-opencode-directory"), directory)
+  const value = pick(request.headers.get("x-codetutor-directory"), directory)
   if (!value) return request
 
   const url = new URL(request.url)
@@ -26,7 +28,7 @@ function rewrite(request: Request, directory?: string) {
   }
 
   const next = new Request(url, request)
-  next.headers.delete("x-opencode-directory")
+  next.headers.delete("x-codetutor-directory")
   return next
 }
 
@@ -46,7 +48,7 @@ export function createOpencodeClient(config?: Config & { directory?: string }) {
   if (config?.directory) {
     config.headers = {
       ...config.headers,
-      "x-opencode-directory": encodeURIComponent(config.directory),
+      "x-codetutor-directory": encodeURIComponent(config.directory),
     }
   }
 
@@ -55,3 +57,5 @@ export function createOpencodeClient(config?: Config & { directory?: string }) {
   client.interceptors.error.use(wrapClientError)
   return new OpencodeClient({ client })
 }
+
+export const createCodeTutorClient = createOpencodeClient

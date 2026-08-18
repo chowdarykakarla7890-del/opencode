@@ -1,4 +1,6 @@
 import { ScrollView } from "@opencode-ai/ui/scroll-view"
+import { useLanguage } from "@/context/language"
+import { A } from "@solidjs/router"
 import { createHomeController } from "./home/home-controller"
 import { createHomeProjectsController } from "./home/home-projects-controller"
 import { HomeUtilityNav } from "./home/home-projects-view"
@@ -9,6 +11,7 @@ import { createHomeSessionsController } from "./home/home-sessions-controller"
 import { HomeSessions } from "./home/home-sessions"
 
 export function NewHome() {
+  const language = useLanguage()
   const home = createHomeController()
   const projects = createHomeProjectsController(home)
   const sessions = createHomeSessionsController(home)
@@ -21,6 +24,12 @@ export function NewHome() {
         bg-v2-background-bg-base shadow-[var(--v2-elevation-raised)]
       `}
     >
+      <A
+        href="/learning"
+        class="absolute right-5 top-5 z-10 rounded-md border border-border-weak-base bg-v2-background-bg-base px-3 py-2 text-12-medium text-text-strong hover:bg-background-weak-base"
+      >
+        {language.t("learning.open")}
+      </A>
       <ScrollView
         class="h-full [container-type:size]"
         thumbContainer={scroll.viewport.thumbTrack}

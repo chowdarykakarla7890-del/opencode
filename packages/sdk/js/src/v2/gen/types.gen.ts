@@ -1644,7 +1644,7 @@ export type GlobalEvent = {
 export type LogLevel = "DEBUG" | "INFO" | "WARN" | "ERROR"
 
 /**
- * Server configuration for opencode serve and web commands
+ * Server configuration for codetutor serve and web commands
  */
 export type ServerConfig = {
   port?: number
@@ -2130,16 +2130,6 @@ export type ExperimentalCapabilities = {
   backgroundSubagents: boolean
 }
 
-export type ConsoleState = {
-  consoleManagedProviders: Array<string>
-  activeOrgName?: string
-  switchableOrgCount: number
-}
-
-export type EffectHttpApiErrorInternalServerError = {
-  _tag: "InternalServerError"
-}
-
 export type ToolListItem = {
   id: string
   description: string
@@ -2545,6 +2535,10 @@ export type NotFoundError = {
   data: {
     message: string
   }
+}
+
+export type EffectHttpApiErrorInternalServerError = {
+  _tag: "InternalServerError"
 }
 
 export type TextPartInput = {
@@ -7524,104 +7518,6 @@ export type ExperimentalCapabilitiesGetResponses = {
 export type ExperimentalCapabilitiesGetResponse =
   ExperimentalCapabilitiesGetResponses[keyof ExperimentalCapabilitiesGetResponses]
 
-export type ExperimentalConsoleGetData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/console"
-}
-
-export type ExperimentalConsoleGetErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * InternalServerError
-   */
-  500: EffectHttpApiErrorInternalServerError
-}
-
-export type ExperimentalConsoleGetError = ExperimentalConsoleGetErrors[keyof ExperimentalConsoleGetErrors]
-
-export type ExperimentalConsoleGetResponses = {
-  /**
-   * Active Console provider metadata
-   */
-  200: ConsoleState
-}
-
-export type ExperimentalConsoleGetResponse = ExperimentalConsoleGetResponses[keyof ExperimentalConsoleGetResponses]
-
-export type ExperimentalConsoleListOrgsData = {
-  body?: never
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/console/orgs"
-}
-
-export type ExperimentalConsoleListOrgsErrors = {
-  /**
-   * Bad request
-   */
-  400: BadRequestError
-  /**
-   * InternalServerError
-   */
-  500: EffectHttpApiErrorInternalServerError
-}
-
-export type ExperimentalConsoleListOrgsError =
-  ExperimentalConsoleListOrgsErrors[keyof ExperimentalConsoleListOrgsErrors]
-
-export type ExperimentalConsoleListOrgsResponses = {
-  /**
-   * Switchable Console orgs
-   */
-  200: {
-    orgs: Array<{
-      accountID: string
-      accountEmail: string
-      accountUrl: string
-      orgID: string
-      orgName: string
-      active: boolean
-    }>
-  }
-}
-
-export type ExperimentalConsoleListOrgsResponse =
-  ExperimentalConsoleListOrgsResponses[keyof ExperimentalConsoleListOrgsResponses]
-
-export type ExperimentalConsoleSwitchOrgData = {
-  body?: {
-    accountID: string
-    orgID: string
-  }
-  path?: never
-  query?: {
-    directory?: string
-    workspace?: string
-  }
-  url: "/experimental/console/switch"
-}
-
-export type ExperimentalConsoleSwitchOrgResponses = {
-  /**
-   * Switch success
-   */
-  200: boolean
-}
-
-export type ExperimentalConsoleSwitchOrgResponse =
-  ExperimentalConsoleSwitchOrgResponses[keyof ExperimentalConsoleSwitchOrgResponses]
-
 export type ToolListData = {
   body?: never
   path?: never
@@ -8427,6 +8323,400 @@ export type FormatterStatusResponses = {
 }
 
 export type FormatterStatusResponse = FormatterStatusResponses[keyof FormatterStatusResponses]
+
+export type LearningCatalogData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/catalog"
+}
+
+export type LearningCatalogErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type LearningCatalogError = LearningCatalogErrors[keyof LearningCatalogErrors]
+
+export type LearningCatalogResponses = {
+  /**
+   * CodeTutor lesson catalog
+   */
+  200: Array<{
+    id: string
+    version: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    track: string
+    order: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    title: string
+    concept: string
+    level: "beginner" | "intermediate" | "advanced"
+    prerequisites: Array<string>
+    objectives: Array<string>
+    estimatedMinutes: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    rubric: Array<string>
+    progress: {
+      lessonID: string
+      status: "not_started" | "in_progress" | "completed"
+      workspace?: string
+      attempts: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      hintIndex: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      solutionRevealed: boolean
+      startedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      completedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    }
+  }>
+}
+
+export type LearningCatalogResponse = LearningCatalogResponses[keyof LearningCatalogResponses]
+
+export type LearningProfileData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/profile"
+}
+
+export type LearningProfileErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type LearningProfileError = LearningProfileErrors[keyof LearningProfileErrors]
+
+export type LearningProfileResponses = {
+  /**
+   * Success
+   */
+  200: {
+    level: "beginner" | "intermediate" | "advanced"
+  }
+}
+
+export type LearningProfileResponse = LearningProfileResponses[keyof LearningProfileResponses]
+
+export type LearningSetProfileData = {
+  body?: {
+    level: "beginner" | "intermediate" | "advanced"
+  }
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/profile"
+}
+
+export type LearningSetProfileErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type LearningSetProfileError = LearningSetProfileErrors[keyof LearningSetProfileErrors]
+
+export type LearningSetProfileResponses = {
+  /**
+   * Success
+   */
+  200: {
+    level: "beginner" | "intermediate" | "advanced"
+  }
+}
+
+export type LearningSetProfileResponse = LearningSetProfileResponses[keyof LearningSetProfileResponses]
+
+export type LearningProgressData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/progress"
+}
+
+export type LearningProgressErrors = {
+  /**
+   * Bad request
+   */
+  400: BadRequestError
+}
+
+export type LearningProgressError = LearningProgressErrors[keyof LearningProgressErrors]
+
+export type LearningProgressResponses = {
+  /**
+   * Success
+   */
+  200: Array<{
+    lessonID: string
+    status: "not_started" | "in_progress" | "completed"
+    workspace?: string
+    attempts: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    hintIndex: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    solutionRevealed: boolean
+    startedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    completedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+  }>
+}
+
+export type LearningProgressResponse = LearningProgressResponses[keyof LearningProgressResponses]
+
+export type LearningResumeData = {
+  body?: never
+  path?: never
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/resume"
+}
+
+export type LearningResumeErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningResumeError = LearningResumeErrors[keyof LearningResumeErrors]
+
+export type LearningResumeResponses = {
+  /**
+   * Success
+   */
+  200: {
+    lesson: {
+      id: string
+      version: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      track: string
+      order: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      title: string
+      concept: string
+      level: "beginner" | "intermediate" | "advanced"
+      prerequisites: Array<string>
+      objectives: Array<string>
+      estimatedMinutes: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      rubric: Array<string>
+      progress: {
+        lessonID: string
+        status: "not_started" | "in_progress" | "completed"
+        workspace?: string
+        attempts: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+        hintIndex: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+        solutionRevealed: boolean
+        startedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+        completedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      }
+    }
+    progress: {
+      lessonID: string
+      status: "not_started" | "in_progress" | "completed"
+      workspace?: string
+      attempts: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      hintIndex: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      solutionRevealed: boolean
+      startedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+      completedAt?: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    }
+  }
+}
+
+export type LearningResumeResponse = LearningResumeResponses[keyof LearningResumeResponses]
+
+export type LearningStartData = {
+  body?: {
+    reset?: boolean
+  }
+  path: {
+    lessonID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/lessons/{lessonID}/start"
+}
+
+export type LearningStartErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningStartError = LearningStartErrors[keyof LearningStartErrors]
+
+export type LearningStartResponses = {
+  /**
+   * Success
+   */
+  200: {
+    lessonID: string
+    title: string
+    workspace: string
+    resumed: boolean
+  }
+}
+
+export type LearningStartResponse = LearningStartResponses[keyof LearningStartResponses]
+
+export type LearningCheckData = {
+  body?: never
+  path: {
+    lessonID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/lessons/{lessonID}/check"
+}
+
+export type LearningCheckErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningCheckError = LearningCheckErrors[keyof LearningCheckErrors]
+
+export type LearningCheckResponses = {
+  /**
+   * Success
+   */
+  200: {
+    lessonID: string
+    passed: boolean
+    exitCode: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    stdout: string
+    stderr: string
+    durationMs: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    completed: boolean
+  }
+}
+
+export type LearningCheckResponse = LearningCheckResponses[keyof LearningCheckResponses]
+
+export type LearningHintData = {
+  body?: never
+  path: {
+    lessonID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/lessons/{lessonID}/hint"
+}
+
+export type LearningHintErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningHintError = LearningHintErrors[keyof LearningHintErrors]
+
+export type LearningHintResponses = {
+  /**
+   * Success
+   */
+  200: {
+    hint: string
+    index: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    total: number | "NaN" | "Infinity" | "-Infinity" | "Infinity" | "-Infinity" | "NaN"
+    exhausted: boolean
+  }
+}
+
+export type LearningHintResponse = LearningHintResponses[keyof LearningHintResponses]
+
+export type LearningSolutionData = {
+  body?: never
+  path: {
+    lessonID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/lessons/{lessonID}/solution"
+}
+
+export type LearningSolutionErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningSolutionError = LearningSolutionErrors[keyof LearningSolutionErrors]
+
+export type LearningSolutionResponses = {
+  /**
+   * Success
+   */
+  200: {
+    lessonID: string
+    files: {
+      [key: string]: string
+    }
+    diffs: {
+      [key: string]: string
+    }
+  }
+}
+
+export type LearningSolutionResponse = LearningSolutionResponses[keyof LearningSolutionResponses]
+
+export type LearningResetData = {
+  body?: never
+  path: {
+    lessonID: string
+  }
+  query?: {
+    directory?: string
+    workspace?: string
+  }
+  url: "/learning/lessons/{lessonID}/reset"
+}
+
+export type LearningResetErrors = {
+  /**
+   * BadRequest | InvalidRequestError
+   */
+  400: EffectHttpApiErrorBadRequest | InvalidRequestError
+}
+
+export type LearningResetError = LearningResetErrors[keyof LearningResetErrors]
+
+export type LearningResetResponses = {
+  /**
+   * Success
+   */
+  200: {
+    lessonID: string
+    title: string
+    workspace: string
+    resumed: boolean
+  }
+}
+
+export type LearningResetResponse = LearningResetResponses[keyof LearningResetResponses]
 
 export type McpStatusData = {
   body?: never

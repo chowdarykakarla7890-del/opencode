@@ -8,12 +8,14 @@ import { usePluginRuntime } from "../../plugin/runtime"
 
 import { getScrollAcceleration } from "../../util/scroll"
 import { WorkspaceLabel } from "../../component/workspace-label"
+import { StudioSectionLabel, StudioStatusChip, useStudioPresentation } from "../../ui/studio"
 
 export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
   const pluginRuntime = usePluginRuntime()
   const project = useProject()
   const sync = useSync()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const tuiConfig = useTuiConfig()
   const session = createMemo(() => sync.session.get(props.sessionID))
   const workspace = () => {
@@ -33,6 +35,8 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
         paddingBottom={1}
         paddingLeft={2}
         paddingRight={2}
+        border={studio.enabled() ? ["left"] : undefined}
+        borderColor={studio.enabled() ? theme.border : undefined}
         position={props.overlay ? "absolute" : "relative"}
       >
         <scrollbox
@@ -46,6 +50,7 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
           }}
         >
           <box flexShrink={0} gap={1} paddingRight={1}>
+            <StudioSectionLabel label="Session" />
             <pluginRuntime.Slot
               name="sidebar_title"
               mode="single_winner"
@@ -87,11 +92,14 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
         </scrollbox>
 
         <box flexShrink={0} gap={1} paddingTop={1}>
+          <Show when={studio.enabled()}>
+            <StudioSectionLabel label="Runtime" right={<StudioStatusChip label="open" tone="success" />} />
+          </Show>
           <pluginRuntime.Slot name="sidebar_footer" mode="single_winner" session_id={props.sessionID}>
             <text fg={theme.textMuted}>
-              <span style={{ fg: theme.success }}>•</span> <b>Open</b>
+              <span style={{ fg: theme.success }}>•</span> <b>Code</b>
               <span style={{ fg: theme.text }}>
-                <b>Code</b>
+                <b>Tutor</b>
               </span>{" "}
               <span>{InstallationVersion}</span>
             </text>

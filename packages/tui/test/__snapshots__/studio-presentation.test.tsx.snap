@@ -1,0 +1,71 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`CodeTutor Studio visual contract 80x24 1`] = `
+" CODETUTOR // TERMINAL STUDIO                                           [LOCAL]
+ ┌────────────────────────────────────────────────────────────────────────────┐
+ │ CODETUTOR // COMPACT TERMINAL                                              │
+ │ Ask anything... “Teach me by building”                                     │
+ │ PLAN · GPT-5.6 TERRA FAST                                                  │
+ │ YOU · Help me understand this function.                                    │
+ │ TUTOR · What does its return value tell you?                               │
+ │ TOOL · READ src/index.ts                                                   │
+ │ SIDEBAR · Lesson 04 · Functions [OPEN]                                     │
+ │ PALETTE · /lesson · /hint · /check                                         │
+ │ PERMISSION · Allow edit to src/index.ts?                                   │
+ │ enter allow   esc reject                                                   │
+ │ QUESTION · Add a focused test                                              │
+ │ NOTIFICATION · CHECK FAILED · retry                                        │
+ └────────────────────────────────────────────────────────────────────────────┘"
+`;
+
+exports[`CodeTutor Studio visual contract 120x36 1`] = `
+" CODETUTOR // TERMINAL STUDIO                                                                                   [LOCAL]
+
+ ┌───────────────────────────────────────────────────────┐ ┌──────────────────────────────────────────────────────────┐
+ │ HOME // TUTOR PROMPT                                  │ │ SESSION TRANSCRIPT                                       │
+ │ CODETUTOR                                             │ │ YOU                                                      │
+ │ Ask anything... “Teach me by building”                │ │ Help me understand this function.                        │
+ │ │ Plan · GPT-5.6 Terra Fast                           │ │ TUTOR // BEGINNER                                        │
+ │ tab agents   ctrl+p commands                          │ │ What do you notice about its return value?               │
+ │                                                       │ │ │ TOOL // READ src/index.ts                              │
+ └───────────────────────────────────────────────────────┘ └──────────────────────────────────────────────────────────┘
+
+ ┌───────────────────────────────────────────────────────┐ ┌──────────────────────────────────────────────────────────┐
+ │ SIDEBAR // RUNTIME                                    │ │ COMMAND PALETTE                                          │
+ │ Lesson 04 · Functions                                 │ │ › /lesson Open lesson catalog                            │
+ │ Workspace ~/code/lesson-04                            │ │  /hint Reveal the next hint                              │
+ │ [OPEN]                                                │ │                                                          │
+ └───────────────────────────────────────────────────────┘ └──────────────────────────────────────────────────────────┘
+
+ ┌──────────────────────────────┐ ┌───────────────────────────────────────┐ ┌─────────────────────────────────────────┐
+ │ PERMISSION REQUEST           │ │ TUTOR QUESTION                        │ │ NOTIFICATION                            │
+ │ Allow edit to src/index.ts?  │ │ Which approach would you try first?   │ │ CHECK FAILED                            │
+ │ enter allow   esc reject     │ │ › Add a focused test                  │ │ Review the validator output and retry.  │
+ └──────────────────────────────┘ └───────────────────────────────────────┘ └─────────────────────────────────────────┘"
+`;
+
+exports[`CodeTutor Studio visual contract 160x48 1`] = `
+" CODETUTOR // TERMINAL STUDIO                                                                                                                           [LOCAL]
+
+ ┌───────────────────────────────────────────────────────────────────────────┐ ┌──────────────────────────────────────────────────────────────────────────────┐
+ │ HOME // TUTOR PROMPT                                                      │ │ SESSION TRANSCRIPT                                                           │
+ │ CODETUTOR                                                                 │ │ YOU                                                                          │
+ │ Ask anything... “Teach me by building”                                    │ │ Help me understand this function.                                            │
+ │ │ Plan · GPT-5.6 Terra Fast                                               │ │ TUTOR // BEGINNER                                                            │
+ │ tab agents   ctrl+p commands                                              │ │ What do you notice about its return value?                                   │
+ │                                                                           │ │ │ TOOL // READ src/index.ts                                                  │
+ └───────────────────────────────────────────────────────────────────────────┘ └──────────────────────────────────────────────────────────────────────────────┘
+
+ ┌───────────────────────────────────────────────────────────────────────────┐ ┌──────────────────────────────────────────────────────────────────────────────┐
+ │ SIDEBAR // RUNTIME                                                        │ │ COMMAND PALETTE                                                              │
+ │ Lesson 04 · Functions                                                     │ │ › /lesson Open lesson catalog                                                │
+ │ Workspace ~/code/lesson-04                                                │ │  /hint Reveal the next hint                                                  │
+ │ [OPEN]                                                                    │ │                                                                              │
+ └───────────────────────────────────────────────────────────────────────────┘ └──────────────────────────────────────────────────────────────────────────────┘
+
+ ┌────────────────────────────────────────────┐ ┌───────────────────────────────────────────────────┐ ┌───────────────────────────────────────────────────────┐
+ │ PERMISSION REQUEST                         │ │ TUTOR QUESTION                                    │ │ NOTIFICATION                                          │
+ │ Allow edit to src/index.ts?                │ │ Which approach would you try first?               │ │ CHECK FAILED                                          │
+ │ enter allow   esc reject                   │ │ › Add a focused test                              │ │ Review the validator output and retry.                │
+ └────────────────────────────────────────────┘ └───────────────────────────────────────────────────┘ └───────────────────────────────────────────────────────┘"
+`;

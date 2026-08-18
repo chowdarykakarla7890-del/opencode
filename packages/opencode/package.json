@@ -1,7 +1,16 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "version": "1.18.18",
-  "name": "opencode",
+  "version": "0.1.0-beta.1",
+  "name": "codetutor",
+  "description": "An AI coding tutor for learning by building in real projects.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chowdarykakarla7890-del/opencode.git"
+  },
+  "homepage": "https://codetutor-docs.vercel.app",
+  "bugs": {
+    "url": "https://github.com/chowdarykakarla7890-del/opencode/issues"
+  },
   "type": "module",
   "license": "MIT",
   "private": true,
@@ -16,7 +25,7 @@
     "dev:temporary": "bun run --conditions=browser ./src/temporary.ts"
   },
   "bin": {
-    "opencode": "./bin/opencode"
+    "codetutor": "./bin/codetutor"
   },
   "exports": {
     "./*": "./src/*.ts"
@@ -52,6 +61,7 @@
     "why-is-node-running": "3.2.2"
   },
   "dependencies": {
+    "@codetutor/curriculum": "workspace:*",
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.1",
     "@agentclientprotocol/sdk": "0.21.0",

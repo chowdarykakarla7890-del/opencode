@@ -84,6 +84,19 @@ const it = testEffect(
 )
 
 describe("session.system", () => {
+  test("formats the configured learner level for the tutor prompt", () => {
+    const prompt = SystemPrompt.learner("intermediate")
+    expect(prompt).toContain("<level>intermediate</level>")
+    expect(prompt).toContain("saved learner setting")
+    expect(prompt).toContain("explicit request still controls")
+  })
+
+  test("uses beginner teaching behavior when no learner level is saved", () => {
+    const prompt = SystemPrompt.learner(undefined)
+    expect(prompt).toContain("<level>beginner</level>")
+    expect(prompt).toContain("safe default")
+  })
+
   test("selects the Meta prompt for Muse Spark model IDs", () => {
     for (const id of ["meta/muse-spark-preview", "muse-spark-1.1", "muse-spark-1.2"]) {
       const prompt = SystemPrompt.provider({ api: { id } } as Provider.Model)[0]

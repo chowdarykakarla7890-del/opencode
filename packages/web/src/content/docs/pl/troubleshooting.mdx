@@ -22,7 +22,7 @@ Możesz ustawić poziom dziennika za pomocą opcji wiersza poleceń `--log-level
 
 ## Przechowywanie danych
 
-opencode przechowuje dane sesji i inne dane aplikacji na dysku pod adresem:
+codetutor przechowuje dane sesji i inne dane aplikacji na dysku pod adresem:
 
 - **macOS/Linux**: `~/.local/share/opencode/`
 - **Windows**: Naciśnij `WIN+R` i wklej `%USERPROFILE%\.local\share\opencode`
@@ -45,7 +45,7 @@ opencode Desktop uruchamia w tle lokalny serwer opencode (sidecar `opencode-cli`
 
 - Całkowicie zakończ i uruchom ponownie aplikację.
 - Jeśli aplikacja wyświetli ekran błędu, kliknij **Uruchom ponownie** i skopiuj szczegóły błędu.
-- Tylko macOS: menu `OpenCode` -> **Załaduj ponownie przeglądarkę internetową** (pomaga, jeśli interfejs użytkownika jest pusty/zawieszony).
+- Tylko macOS: menu `CodeTutor` -> **Załaduj ponownie przeglądarkę internetową** (pomaga, jeśli interfejs użytkownika jest pusty/zawieszony).
 
 ---
 
@@ -57,28 +57,28 @@ Jeśli aplikacja komputerowa ulega awarii podczas uruchamiania, zawiesza się lu
 
 Otwórz globalny plik konfiguracyjny i poszukaj klucza `plugin`.
 
-- **macOS/Linux**: `~/.config/opencode/opencode.jsonc` (lub `~/.config/opencode/opencode.json`)
-- **macOS/Linux** (starsze instalacje): `~/.local/share/opencode/opencode.jsonc`
-- **Windows**: Naciśnij `WIN+R` i wklej `%USERPROFILE%\.config\opencode\opencode.jsonc`
+- **macOS/Linux**: `~/.config/opencode/codetutor.jsonc` (lub `~/.config/opencode/codetutor.json`)
+- **macOS/Linux** (starsze instalacje): `~/.local/share/opencode/codetutor.jsonc`
+- **Windows**: Naciśnij `WIN+R` i wklej `%USERPROFILE%\.config\opencode\codetutor.jsonc`
 
 Jeśli masz skonfigurowane wtyczki, tymczasowo je wyłącz, usuwając klucz lub ustawiając go na pustą tablicę:
 
 ```jsonc
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "plugin": [],
 }
 ```
 
 #### Sprawdź katalogi wtyczek
 
-opencode może także ładować lokalne wtyczki z dysku. Tymczasowo usuń je (lub zmień nazwę folderu) i uruchom ponownie aplikację komputerową:
+codetutor może także ładować lokalne wtyczki z dysku. Tymczasowo usuń je (lub zmień nazwę folderu) i uruchom ponownie aplikację komputerową:
 
 - **Wtyczki globalne**
   - **macOS/Linux**: `~/.config/opencode/plugins/`
   - **Windows**: Naciśnij `WIN+R` i wklej `%USERPROFILE%\.config\opencode\plugins`
 - **Wtyczki projektowe** (tylko jeśli używasz konfiguracji dla poszczególnych projektów)
-  - `<your-project>/.opencode/plugins/`
+  - `<your-project>/.codetutor/plugins/`
 
 Jeśli aplikacja ponownie zacznie działać, włączaj ponownie wtyczki pojedynczo, aby dowiedzieć się, która powoduje problem.
 
@@ -86,7 +86,7 @@ Jeśli aplikacja ponownie zacznie działać, włączaj ponownie wtyczki pojedync
 
 ### Wyczyść pamięć podręczną
 
-Jeśli wyłączenie wtyczek nie pomoże (lub instalacja wtyczki utknęła), wyczyść pamięć podręczną, aby opencode mógł ją odbudować.
+Jeśli wyłączenie wtyczek nie pomoże (lub instalacja wtyczki utknęła), wyczyść pamięć podręczną, aby codetutor mógł ją odbudować.
 
 1. Całkowicie zamknij opencode Desktop.
 2. Usuń katalog pamięci podręcznej:
@@ -111,13 +111,13 @@ Na ekranie głównym kliknij nazwę serwera (z kropką stanu), aby otworzyć sel
 
 #### Usuń `server.port` / `server.hostname` ze swojej konfiguracji
 
-Jeśli Twój `opencode.json(c)` zawiera sekcję `server`, tymczasowo usuń ją i uruchom ponownie aplikację komputerową.
+Jeśli Twój `codetutor.json(c)` zawiera sekcję `server`, tymczasowo usuń ją i uruchom ponownie aplikację komputerową.
 
 #### Sprawdź zmienne środowiskowe
 
-Jeśli w swoim środowisku masz ustawiony `OPENCODE_PORT`, aplikacja komputerowa spróbuje użyć tego portu dla serwera lokalnego.
+Jeśli w swoim środowisku masz ustawiony `CODETUTOR_PORT`, aplikacja komputerowa spróbuje użyć tego portu dla serwera lokalnego.
 
-- usuń `OPENCODE_PORT` (lub wybierz wolny port) i uruchom ponownie.
+- usuń `CODETUTOR_PORT` (lub wybierz wolny port) i uruchom ponownie.
 
 ---
 
@@ -146,7 +146,7 @@ Jeśli doświadczasz niskiej wydajności, problemów z dostępem do plików lub 
 
 opencode Desktop pokazuje powiadomienia systemowe tylko wtedy, gdy:
 
-- powiadomienia są włączone dla opencode w ustawieniach systemu operacyjnego, oraz
+- powiadomienia są włączone dla codetutor w ustawieniach systemu operacyjnego, oraz
 - okno aplikacji nie jest aktywne.
 
 ---
@@ -177,7 +177,7 @@ Jeśli masz problemy z opencode:
 
    Najlepszym sposobem zgłaszania błędów lub zgłaszania żądań funkcji jest skorzystanie z naszego repozytorium GitHub:
 
-   [**github.com/anomalyco/opencode/issues**](https://github.com/anomalyco/opencode/issues)
+   [**github.com/chowdarykakarla7890-del/opencode/issues**](https://github.com/chowdarykakarla7890-del/opencode/issues)
 
    Przed utworzeniem nowego problemu przeszukaj istniejące i sprawdź, czy Twój problem nie został już zgłoszony.
 
@@ -185,7 +185,7 @@ Jeśli masz problemy z opencode:
 
    Aby uzyskać pomoc w czasie rzeczywistym i dyskusję społeczności, dołącz do naszego serwera Discord:
 
-   [**opencode.ai/discord**](https://opencode.ai/discord)
+   [**codetutor-docs.vercel.app/discord**](https://codetutor-docs.vercel.app/discord)
 
 ---
 
@@ -195,11 +195,11 @@ Oto kilka typowych problemów i sposobów ich rozwiązania.
 
 ---
 
-### opencode nie uruchamia się
+### codetutor nie uruchamia się
 
 1. Sprawdź dzienniki pod kątem komunikatów o błędach
 2. Spróbuj uruchomić z `--print-logs`, aby zobaczyć dane wyjściowe w terminalu
-3. Upewnij się, że masz najnowszą wersję z `opencode upgrade`
+3. Upewnij się, że masz najnowszą wersję z `codetutor upgrade`
 
 ---
 
@@ -227,7 +227,7 @@ Przykłady:
 - `openrouter/google/gemini-2.5-flash`
 - `opencode/kimi-k2`
 
-Aby dowiedzieć się, do jakich modeli masz dostęp, uruchom `opencode models`
+Aby dowiedzieć się, do jakich modeli masz dostęp, uruchom `codetutor models`
 
 ---
 
@@ -252,7 +252,7 @@ Aby rozwiązać ten problem:
 
 ### Błędy AI_APICallError i problemy z pakietami dostawców
 
-Jeśli napotkasz błędy wywołań API, może to wynikać z nieaktualnych pakietów dostawców. opencode dynamicznie instaluje pakiety dostawców (OpenAI, Anthropic, Google itp.) w razie potrzeby i przechowuje je lokalnie w pamięci podręcznej.
+Jeśli napotkasz błędy wywołań API, może to wynikać z nieaktualnych pakietów dostawców. codetutor dynamicznie instaluje pakiety dostawców (OpenAI, Anthropic, Google itp.) w razie potrzeby i przechowuje je lokalnie w pamięci podręcznej.
 
 Aby rozwiązać problemy z pakietem dostawcy:
 
@@ -266,7 +266,7 @@ Aby rozwiązać problemy z pakietem dostawcy:
 
 2. Uruchom ponownie kod opencode, aby ponownie zainstalować najnowsze pakiety dostawców
 
-Zmusi to opencode do pobrania najnowszych wersji pakietów dostawców, co często rozwiązuje problemy ze zgodnością z parametrami modelu i zmianami API.
+Zmusi to codetutor do pobrania najnowszych wersji pakietów dostawców, co często rozwiązuje problemy ze zgodnością z parametrami modelu i zmianami API.
 
 ---
 
@@ -297,4 +297,4 @@ Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 export DISPLAY=:99.0
 ```
 
-opencode wykryje, czy używasz Waylanda i wolisz `wl-clipboard`, w przeciwnym razie spróbuje znaleźć narzędzia schowka w kolejności: `xclip` i `xsel`.
+codetutor wykryje, czy używasz Waylanda i wolisz `wl-clipboard`, w przeciwnym razie spróbuje znaleźć narzędzia schowka w kolejności: `xclip` i `xsel`.

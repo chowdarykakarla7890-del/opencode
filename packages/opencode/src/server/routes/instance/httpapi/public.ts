@@ -1,5 +1,5 @@
 import { OpenApi } from "effect/unstable/httpapi"
-import { OpenCodeHttpApi } from "./api"
+import { CodeTutorHttpApi } from "./api"
 import { QueryBooleanOpenApi } from "./groups/query"
 
 type OpenApiParameter = {
@@ -75,7 +75,7 @@ const QueryParameterSchemas: Record<string, OpenApiSchema> = {
 
 const LegacyComponentDescriptions: Record<string, string> = {
   LogLevel: "Log level",
-  ServerConfig: "Server configuration for opencode serve and web commands",
+  ServerConfig: "Server configuration for codetutor serve and web commands",
   LayoutConfig: "@deprecated Always uses stretch layout.",
 }
 
@@ -373,7 +373,6 @@ function referencesComponent(input: unknown, name: string): boolean {
 }
 
 function normalizeLegacyOperation(operation: OpenApiOperation, path: string, method: string) {
-  if (path === "/experimental/console/switch" && method === "post") delete operation.responses?.["400"]
   if ((path !== "/session/{sessionID}/message" && path !== "/session/{sessionID}/command") || method !== "post") return
   const response = operation.responses?.["200"]?.content?.["application/json"]
   if (!response) return
@@ -449,7 +448,7 @@ function fixSelfReferencingComponents(spec: OpenApiSpec) {
     }
   }
   // Simplest fix: generate the raw spec (without transform) to get correct schemas
-  const raw: OpenApiSpec = OpenApi.fromApi(OpenCodeHttpApi)
+  const raw: OpenApiSpec = OpenApi.fromApi(CodeTutorHttpApi)
   const rawSchemas = raw.components?.schemas
   if (!rawSchemas) return
   for (const name of selfRefs) {
@@ -527,7 +526,7 @@ function normalizeParameter(param: OpenApiParameter, route: string) {
   param.schema = stripOptionalNull(param.schema)
 }
 
-export const PublicApi = OpenCodeHttpApi.annotateMerge(
+export const PublicApi = CodeTutorHttpApi.annotateMerge(
   OpenApi.annotations({
     title: "opencode",
     version: "1.0.0",

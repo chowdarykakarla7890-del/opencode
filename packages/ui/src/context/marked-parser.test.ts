@@ -4,8 +4,8 @@ import { createMarkdownParser } from "./marked-parser"
 const parser = createMarkdownParser((code, language) => `<pre data-language="${language}">${code}</pre>`)
 
 test("renders links with application attributes", async () => {
-  expect(await parser.parse("[OpenCode](https://opencode.ai)")).toBe(
-    '<p><a href="https://opencode.ai" class="external-link" target="_blank" rel="noopener noreferrer">OpenCode</a></p>\n',
+  expect(await parser.parse("[CodeTutor](https://codetutor-docs.vercel.app)")).toBe(
+    '<p><a href="https://codetutor-docs.vercel.app" class="external-link" target="_blank" rel="noopener noreferrer">CodeTutor</a></p>\n',
   )
 })
 

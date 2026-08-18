@@ -1,9 +1,9 @@
 // @ts-nocheck
 
-import { OpenCode } from "@opencode-ai/core"
+import { CodeTutor } from "@opencode-ai/core"
 import { ReadTool } from "@opencode-ai/core/tools"
 
-const opencode = OpenCode.make({})
+const opencode = CodeTutor.make({})
 
 opencode.tool.add(ReadTool)
 

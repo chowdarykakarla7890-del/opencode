@@ -16,7 +16,11 @@ const pkg = JSON.parse(originalText) as {
   name: string
   version: string
   exports: Record<string, string>
+  dependencies: Record<string, string>
 }
+pkg.name = "codetutor-plugin"
+pkg.version = Script.version
+pkg.dependencies["@opencode-ai/sdk"] = `npm:codetutor-sdk@${pkg.version}`
 if (await published(pkg.name, pkg.version)) {
   console.log(`already published ${pkg.name}@${pkg.version}`)
 } else {
@@ -31,7 +35,7 @@ if (await published(pkg.name, pkg.version)) {
   await Bun.write("package.json", JSON.stringify(pkg, null, 2))
   try {
     await $`bun pm pack`
-    await $`npm publish *.tgz --tag ${Script.channel} --access public`
+    await $`npm publish *.tgz --provenance --tag ${Script.channel} --access public`
   } finally {
     await Bun.write("package.json", originalText)
   }

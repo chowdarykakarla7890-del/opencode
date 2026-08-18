@@ -1,6 +1,6 @@
 ---
 title: SDK
-description: Type-safe JS klijent za opencode server.
+description: Type-safe JS klijent za codetutor server.
 ---
 
 import config from "../../../../config.mjs"
@@ -49,7 +49,7 @@ Ovo pokrece i server i klijent
 
 ## Konfiguracija
 
-Mozete proslijediti konfiguracijski objekat za prilagodavanje ponasanja. Instanca i dalje ucitava `opencode.json`, ali konfiguraciju mozete nadjacati ili dodati inline:
+Mozete proslijediti konfiguracijski objekat za prilagodavanje ponasanja. Instanca i dalje ucitava `codetutor.json`, ali konfiguraciju mozete nadjacati ili dodati inline:
 
 ```javascript
 import { createOpencode } from "@opencode-ai/sdk"
@@ -69,7 +69,7 @@ opencode.server.close()
 
 ## Samo klijent
 
-Ako vec imate pokrenutu opencode instancu, mozete napraviti klijentsku instancu i povezati se na nju:
+Ako vec imate pokrenutu codetutor instancu, mozete napraviti klijentsku instancu i povezati se na nju:
 
 ```javascript
 import { createOpencodeClient } from "@opencode-ai/sdk"

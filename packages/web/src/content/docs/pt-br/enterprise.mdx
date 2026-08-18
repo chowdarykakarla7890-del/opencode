@@ -1,6 +1,6 @@
 ---
 title: Empresa
-description: Usando o opencode com segurança em sua organização.
+description: Usando o codetutor com segurança em sua organização.
 ---
 
 import config from "../../../../config.mjs"
@@ -9,7 +9,7 @@ export const email = `mailto:${config.email}`
 O opencode Enterprise é para organizações que desejam garantir que seu código e dados nunca deixem sua infraestrutura. Isso pode ser feito usando uma configuração centralizada que se integra ao seu SSO e gateway de IA interno.
 
 :::note
-O opencode não armazena nenhum de seus códigos ou dados de contexto.
+O codetutor não armazena nenhum de seus códigos ou dados de contexto.
 :::
 
 Para começar com o opencode Enterprise:
@@ -27,9 +27,9 @@ O opencode é de código aberto e não armazena nenhum de seus códigos ou dados
 
 ### Manipulação de dados
 
-**O opencode não armazena seu código ou dados de contexto.** Todo o processamento acontece localmente ou através de chamadas diretas de API para seu provedor de IA.
+**O codetutor não armazena seu código ou dados de contexto.** Todo o processamento acontece localmente ou através de chamadas diretas de API para seu provedor de IA.
 
-Isso significa que, enquanto você estiver usando um provedor em quem confia, ou um gateway de IA interno, você pode usar o opencode com segurança.
+Isso significa que, enquanto você estiver usando um provedor em quem confia, ou um gateway de IA interno, você pode usar o codetutor com segurança.
 
 A única ressalva aqui é o recurso opcional `/share`.
 
@@ -37,15 +37,15 @@ A única ressalva aqui é o recurso opcional `/share`.
 
 #### Compartilhando conversas
 
-Se um usuário habilitar o recurso `/share`, a conversa e os dados associados a ela são enviados para o serviço que usamos para hospedar essas páginas de compartilhamento em opencode.ai.
+Se um usuário habilitar o recurso `/share`, a conversa e os dados associados a ela são enviados para o serviço que usamos para hospedar essas páginas de compartilhamento em codetutor-docs.vercel.app.
 
 Os dados são atualmente servidos através da rede de borda do nosso CDN e são armazenados em cache na borda perto de seus usuários.
 
 Recomendamos que você desative isso para seu teste.
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "disabled"
 }
 ```
@@ -68,13 +68,13 @@ Usamos um modelo por assento para o opencode Enterprise. Se você tiver seu pró
 
 ## Implantação
 
-Uma vez que você tenha concluído seu teste e esteja pronto para usar o opencode em sua organização, você pode **<a href={email}>entrar em contato conosco</a>** para discutir preços e opções de implementação.
+Uma vez que você tenha concluído seu teste e esteja pronto para usar o codetutor em sua organização, você pode **<a href={email}>entrar em contato conosco</a>** para discutir preços e opções de implementação.
 
 ---
 
 ### Configuração Central
 
-Podemos configurar o opencode para usar uma única configuração central para toda a sua organização.
+Podemos configurar o codetutor para usar uma única configuração central para toda a sua organização.
 
 Essa configuração centralizada pode se integrar ao seu provedor de SSO e garante que todos os usuários acessem apenas seu gateway de IA interno.
 
@@ -82,15 +82,15 @@ Essa configuração centralizada pode se integrar ao seu provedor de SSO e garan
 
 ### Integração SSO
 
-Através da configuração central, o opencode pode se integrar ao provedor de SSO de sua organização para autenticação.
+Através da configuração central, o codetutor pode se integrar ao provedor de SSO de sua organização para autenticação.
 
-Isso permite que o opencode obtenha credenciais para seu gateway de IA interno através do seu sistema de gerenciamento de identidade existente.
+Isso permite que o codetutor obtenha credenciais para seu gateway de IA interno através do seu sistema de gerenciamento de identidade existente.
 
 ---
 
 ### Gateway de IA Interno
 
-Com a configuração central, o opencode também pode ser configurado para usar apenas seu gateway de IA interno.
+Com a configuração central, o codetutor também pode ser configurado para usar apenas seu gateway de IA interno.
 
 Você também pode desativar todos os outros provedores de IA, garantindo que todas as solicitações passem pela infraestrutura aprovada de sua organização.
 
@@ -132,14 +132,14 @@ Oferecemos preços empresariais por assento. Se você tiver seu próprio gateway
 <details>
 <summary>Meus dados estão seguros com o opencode Enterprise?</summary>
 
-Sim. O opencode não armazena seu código ou dados de contexto. Todo o processamento acontece localmente ou através de chamadas diretas de API para seu provedor de IA. Com a configuração central e a integração SSO, seus dados permanecem seguros dentro da infraestrutura de sua organização.
+Sim. O codetutor não armazena seu código ou dados de contexto. Todo o processamento acontece localmente ou através de chamadas diretas de API para seu provedor de IA. Com a configuração central e a integração SSO, seus dados permanecem seguros dentro da infraestrutura de sua organização.
 
 </details>
 
 <details>
 <summary>Podemos usar nosso próprio registro NPM privado?</summary>
 
-O opencode suporta registros npm privados através do suporte nativo do arquivo `.npmrc` do Bun. Se sua organização usa um registro privado, como JFrog Artifactory, Nexus ou similar, certifique-se de que os desenvolvedores estejam autenticados antes de executar o opencode.
+O codetutor suporta registros npm privados através do suporte nativo do arquivo `.npmrc` do Bun. Se sua organização usa um registro privado, como JFrog Artifactory, Nexus ou similar, certifique-se de que os desenvolvedores estejam autenticados antes de executar o opencode.
 
 Para configurar a autenticação com seu registro privado:
 
@@ -147,7 +147,7 @@ Para configurar a autenticação com seu registro privado:
 npm login --registry=https://your-company.jfrog.io/api/npm/npm-virtual/
 ```
 
-Isso cria `~/.npmrc` com os detalhes de autenticação. O opencode irá automaticamente
+Isso cria `~/.npmrc` com os detalhes de autenticação. O codetutor irá automaticamente
 capturar isso.
 
 :::caution
@@ -161,6 +161,6 @@ registry=https://your-company.jfrog.io/api/npm/npm-virtual/
 //your-company.jfrog.io/api/npm/npm-virtual/:_authToken=${NPM_AUTH_TOKEN}
 ```
 
-Os desenvolvedores devem estar logados no registro privado antes de executar o opencode para garantir que os pacotes possam ser instalados a partir do seu registro empresarial.
+Os desenvolvedores devem estar logados no registro privado antes de executar o codetutor para garantir que os pacotes possam ser instalados a partir do seu registro empresarial.
 
 </details>

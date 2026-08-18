@@ -57,6 +57,7 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 import { ProviderV2 } from "@opencode-ai/core/provider"
 import { ModelV2 } from "@opencode-ai/core/model"
 import { LocationServiceMap, locationServiceMapLayer } from "@opencode-ai/core/location-services"
+import { Learning } from "@/learning/learning"
 
 const summary = Layer.succeed(
   SessionSummary.Service,
@@ -310,8 +311,8 @@ const writeText = Effect.fn("test.writeText")(function* (file: string, text: str
 
 const writeConfig = Effect.fn("test.writeConfig")(function* (dir: string, config: Partial<ConfigV1.Info>) {
   yield* writeText(
-    path.join(dir, "opencode.json"),
-    JSON.stringify({ $schema: "https://opencode.ai/config.json", ...config }),
+    path.join(dir, "codetutor.json"),
+    JSON.stringify({ $schema: "https://codetutor-docs.vercel.app/config.json", ...config }),
   )
 })
 
@@ -575,6 +576,39 @@ withMcpInstructions.instance(
       const body = JSON.stringify(hits[0]?.body)
       expect(body).toContain('<server name=\\"guide-server\\">')
       expect(body).toContain("Use lookup before mutate.")
+      yield* Fiber.interrupt(fiber)
+    }),
+  15_000,
+)
+
+it.instance(
+  "tutor loop includes the saved learner level in model system context",
+  () =>
+    Effect.gen(function* () {
+      const { llm } = yield* useServerConfig(providerCfg)
+      const prompt = yield* SessionPrompt.Service
+      const sessions = yield* Session.Service
+      const chat = yield* sessions.create({
+        title: "Pinned",
+        permission: [{ permission: "*", pattern: "*", action: "allow" }],
+      })
+      yield* Learning.setLevel("advanced")
+      yield* prompt.prompt({
+        sessionID: chat.id,
+        agent: "tutor",
+        noReply: true,
+        parts: [{ type: "text", text: "explain this project" }],
+      })
+      yield* llm.hang
+
+      const fiber = yield* prompt.loop({ sessionID: chat.id }).pipe(Effect.forkChild)
+      yield* awaitWithTimeout(llm.wait(1), "timed out waiting for tutor request", "10 seconds")
+
+      const hits = yield* llm.hits
+      const body = JSON.stringify(hits[0]?.body)
+      expect(body).toContain("<learner_profile>")
+      expect(body).toContain("<level>advanced</level>")
+      expect(body).toContain("CodeTutor is editor-independent")
       yield* Fiber.interrupt(fiber)
     }),
   15_000,

@@ -8,12 +8,14 @@ import { useSDK } from "../../context/sdk"
 import { SplitBorder } from "../../ui/border"
 import { useTuiConfig } from "../../config"
 import { useBindings, useOpencodeModeStack } from "../../keymap"
+import { studioBorder, StudioSectionLabel, useStudioPresentation } from "../../ui/studio"
 
 const QUESTION_MODE = "question"
 
 export function QuestionPrompt(props: { request: QuestionRequest; directory?: string }) {
   const sdk = useSDK()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const renderer = useRenderer()
   const tuiConfig = useTuiConfig()
   const modeStack = useOpencodeModeStack()
@@ -288,11 +290,12 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
   return (
     <box
       backgroundColor={theme.backgroundPanel}
-      border={["left"]}
-      borderColor={theme.accent}
-      customBorderChars={SplitBorder.customBorderChars}
+      border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left"]}
+      borderColor={studio.enabled() ? theme.primary : theme.accent}
+      customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
     >
       <box gap={1} paddingLeft={1} paddingRight={3} paddingTop={1} paddingBottom={1}>
+        <StudioSectionLabel label="Tutor question" />
         <Show when={!single()}>
           <box flexDirection="row" gap={1} paddingLeft={1}>
             <For each={questions()}>
@@ -307,7 +310,9 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
                     paddingRight={1}
                     backgroundColor={
                       isActive()
-                        ? theme.accent
+                        ? studio.enabled()
+                          ? theme.backgroundElement
+                          : theme.accent
                         : tabHover() === index()
                           ? theme.backgroundElement
                           : theme.backgroundPanel
@@ -322,7 +327,9 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
                     <text
                       fg={
                         isActive()
-                          ? selectedForeground(theme, theme.accent)
+                          ? studio.enabled()
+                            ? theme.primary
+                            : selectedForeground(theme, theme.accent)
                           : isAnswered()
                             ? theme.text
                             : theme.textMuted
@@ -338,7 +345,13 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
               paddingLeft={1}
               paddingRight={1}
               backgroundColor={
-                confirm() ? theme.accent : tabHover() === "confirm" ? theme.backgroundElement : theme.backgroundPanel
+                confirm()
+                  ? studio.enabled()
+                    ? theme.backgroundElement
+                    : theme.accent
+                  : tabHover() === "confirm"
+                    ? theme.backgroundElement
+                    : theme.backgroundPanel
               }
               onMouseOver={() => setTabHover("confirm")}
               onMouseOut={() => setTabHover(null)}
@@ -347,7 +360,17 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
                 selectTab(questions().length)
               }}
             >
-              <text fg={confirm() ? selectedForeground(theme, theme.accent) : theme.textMuted}>Confirm</text>
+              <text
+                fg={
+                  confirm()
+                    ? studio.enabled()
+                      ? theme.primary
+                      : selectedForeground(theme, theme.accent)
+                    : theme.textMuted
+                }
+              >
+                Confirm
+              </text>
             </box>
           </box>
         </Show>
@@ -486,6 +509,8 @@ export function QuestionPrompt(props: { request: QuestionRequest; directory?: st
         paddingRight={3}
         paddingBottom={1}
         justifyContent="space-between"
+        border={studio.enabled() ? ["top"] : undefined}
+        borderColor={studio.enabled() ? theme.borderSubtle : undefined}
       >
         <box flexDirection="row" gap={2}>
           <Show when={!single()}>

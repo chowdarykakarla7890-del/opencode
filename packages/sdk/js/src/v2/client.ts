@@ -4,8 +4,21 @@ export type { FileSystemEntry as LocationFileSystemEntry } from "./gen/types.gen
 import { createClient } from "./gen/client/client.gen.js"
 import { type Config } from "./gen/client/types.gen.js"
 import { OpencodeClient } from "./gen/sdk.gen.js"
+import type {
+  LearningCatalogResponse,
+  LearningCheckResponse,
+  LearningProfileResponse,
+  LearningProgressResponse,
+} from "./gen/types.gen.js"
 import { wrapClientError } from "../error-interceptor.js"
 export { type Config as OpencodeClientConfig, OpencodeClient }
+export { OpencodeClient as CodeTutorClient }
+export type CodeTutorClientConfig = Config
+export type LearnerLevel = NonNullable<LearningProfileResponse["level"]>
+export type LessonSummary = LearningCatalogResponse[number]
+export type LessonProgress = LearningProgressResponse[number]
+export type LessonStatus = LessonProgress["status"]
+export type CheckResult = LearningCheckResponse
 
 function pick(value: string | null, fallback?: string, encode?: (value: string) => string) {
   if (!value) return
@@ -22,8 +35,8 @@ function rewrite(request: Request, values: { directory?: string; workspace?: str
   let changed = false
 
   for (const [name, key] of [
-    ["x-opencode-directory", "directory"],
-    ["x-opencode-workspace", "workspace"],
+    ["x-codetutor-directory", "directory"],
+    ["x-codetutor-workspace", "workspace"],
   ] as const) {
     const value = pick(
       request.headers.get(name),
@@ -42,8 +55,8 @@ function rewrite(request: Request, values: { directory?: string; workspace?: str
   if (!changed) return request
 
   const next = new Request(url, request)
-  next.headers.delete("x-opencode-directory")
-  next.headers.delete("x-opencode-workspace")
+  next.headers.delete("x-codetutor-directory")
+  next.headers.delete("x-codetutor-workspace")
   return next
 }
 
@@ -63,14 +76,14 @@ export function createOpencodeClient(config?: Config & { directory?: string; exp
   if (config?.directory) {
     config.headers = {
       ...config.headers,
-      "x-opencode-directory": encodeURIComponent(config.directory),
+      "x-codetutor-directory": encodeURIComponent(config.directory),
     }
   }
 
   if (config?.experimental_workspaceID) {
     config.headers = {
       ...config.headers,
-      "x-opencode-workspace": config.experimental_workspaceID,
+      "x-codetutor-workspace": config.experimental_workspaceID,
     }
   }
 
@@ -84,10 +97,12 @@ export function createOpencodeClient(config?: Config & { directory?: string; exp
   client.interceptors.response.use((response) => {
     const contentType = response.headers.get("content-type")
     if (contentType === "text/html")
-      throw new Error("Request is not supported by this version of OpenCode Server (Server responded with text/html)")
+      throw new Error("Request is not supported by this version of CodeTutor Server (Server responded with text/html)")
 
     return response
   })
   client.interceptors.error.use(wrapClientError)
   return new OpencodeClient({ client })
 }
+
+export const createCodeTutorClient = createOpencodeClient

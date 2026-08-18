@@ -72,7 +72,7 @@ app.message(async ({ message, say }) => {
   let session = sessions.get(sessionKey)
 
   if (!session) {
-    console.log("🆕 Creating new opencode session...")
+    console.log("🆕 Creating new CodeTutor session...")
     const { client, server } = opencode
 
     const createResult = await client.session.create({
@@ -88,7 +88,7 @@ app.message(async ({ message, say }) => {
       return
     }
 
-    console.log("✅ Created opencode session:", createResult.data.id)
+    console.log("✅ Created CodeTutor session:", createResult.data.id)
 
     session = { client, server, sessionId: createResult.data.id, channel, thread }
     sessions.set(sessionKey, session)

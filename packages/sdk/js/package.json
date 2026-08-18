@@ -1,7 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@opencode-ai/sdk",
-  "version": "1.18.18",
+  "version": "0.1.0-beta.1",
+  "description": "JavaScript and TypeScript SDK for CodeTutor.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chowdarykakarla7890-del/opencode.git",
+    "directory": "packages/sdk/js"
+  },
+  "homepage": "https://codetutor-docs.vercel.app",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -20,7 +27,9 @@
     "./v2/types": "./src/v2/gen/types.gen.ts"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "devDependencies": {
     "@hey-api/openapi-ts": "0.90.10",

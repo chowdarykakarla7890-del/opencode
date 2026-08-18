@@ -1,13 +1,13 @@
 {
   "name": "@opencode-ai/desktop",
   "private": true,
-  "version": "1.18.18",
+  "version": "0.1.0-beta.1",
+  "description": "CodeTutor desktop beta — an AI coding tutor with a bundled offline curriculum.",
   "type": "module",
   "license": "MIT",
-  "homepage": "https://opencode.ai",
+  "homepage": "https://codetutor-docs.vercel.app",
   "author": {
-    "name": "OpenCode",
-    "email": "hello@opencode.ai"
+    "name": "CodeTutor"
   },
   "scripts": {
     "typecheck": "tsgo -b",

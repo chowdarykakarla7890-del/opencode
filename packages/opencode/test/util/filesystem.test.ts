@@ -154,20 +154,20 @@ describe("filesystem", () => {
       const nested = path.join(project, "nested")
       await fs.mkdir(nested, { recursive: true })
 
-      await fs.writeFile(path.join(tmp.path, "opencode.json"), "{}", "utf-8")
-      await fs.writeFile(path.join(tmp.path, "opencode.jsonc"), "{}", "utf-8")
-      await fs.writeFile(path.join(project, "opencode.json"), "{}", "utf-8")
-      await fs.writeFile(path.join(project, "opencode.jsonc"), "{}", "utf-8")
+      await fs.writeFile(path.join(tmp.path, "codetutor.json"), "{}", "utf-8")
+      await fs.writeFile(path.join(tmp.path, "codetutor.jsonc"), "{}", "utf-8")
+      await fs.writeFile(path.join(project, "codetutor.json"), "{}", "utf-8")
+      await fs.writeFile(path.join(project, "codetutor.jsonc"), "{}", "utf-8")
 
-      const result = await Filesystem.findUp(["opencode.json", "opencode.jsonc"], nested, tmp.path, {
+      const result = await Filesystem.findUp(["codetutor.json", "codetutor.jsonc"], nested, tmp.path, {
         rootFirst: true,
       })
 
       expect(result).toEqual([
-        path.join(tmp.path, "opencode.json"),
-        path.join(tmp.path, "opencode.jsonc"),
-        path.join(project, "opencode.json"),
-        path.join(project, "opencode.jsonc"),
+        path.join(tmp.path, "codetutor.json"),
+        path.join(tmp.path, "codetutor.jsonc"),
+        path.join(project, "codetutor.json"),
+        path.join(project, "codetutor.jsonc"),
       ])
     })
   })

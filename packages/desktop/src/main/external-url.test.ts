@@ -10,7 +10,7 @@ describe("external URLs", () => {
   })
 
   test("opens mail links externally", () => {
-    expect(resolveExternalURL("mailto:hello@opencode.ai")).toBe("mailto:hello@opencode.ai")
+    expect(resolveExternalURL("mailto:hello@codetutor-docs.vercel.app")).toBe("mailto:hello@codetutor-docs.vercel.app")
   })
 
   test("rejects file URLs and unsupported protocols", () => {

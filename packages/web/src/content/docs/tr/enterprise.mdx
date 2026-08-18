@@ -9,7 +9,7 @@ export const email = `mailto:${config.email}`
 opencode Enterprise, kodlarının ve verilerinin altyapılarından asla ayrılmamasını sağlamak isteyen kuruluşlar içindir. Bunu, SSO ve dahili AI ağ geçidinizle entegre olan merkezi bir yapılandırma kullanarak yapabilir.
 
 :::note
-opencode kodunuzu veya içerik verilerinizi saklamaz.
+codetutor kodunuzu veya içerik verilerinizi saklamaz.
 :::
 
 opencode Enterprise'ı kullanmaya başlamak için:
@@ -21,7 +21,7 @@ opencode Enterprise'ı kullanmaya başlamak için:
 
 ## Deneme
 
-opencode açık kaynaktır ve herhangi bir kodunuzu veya içerik verilerinizi saklamaz; böylece geliştiricileriniz [hemen başlayıp](/docs/) bir deneme gerçekleştirebilir.
+codetutor açık kaynaktır ve herhangi bir kodunuzu veya içerik verilerinizi saklamaz; böylece geliştiricileriniz [hemen başlayıp](/docs/) bir deneme gerçekleştirebilir.
 
 ---
 
@@ -38,15 +38,15 @@ saklama alanının tek izolasyonuna bağlı `/share` özelliğidir.
 
 #### Konuşmaları paylaşma
 
-Bir kullanıcı `/share` özelliğini etkinleştirirse, görüşme ve onunla ilişkili veriler, bu paylaşım sayfalarını opencode.ai'de barındırmak için kullandığımız hizmete gönderilir.
+Bir kullanıcı `/share` özelliğini etkinleştirirse, görüşme ve onunla ilişkili veriler, bu paylaşım sayfalarını codetutor-docs.vercel.app'de barındırmak için kullandığımız hizmete gönderilir.
 
 Veriler şu anda CDN uç ağımız üzerinden sunuluyor ve kullanıcılarınızın yakınındaki uçta önbelleğe alınıyor.
 
 Deneme süreniz için bunu devre dışı bırakmanızı öneririz.
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "disabled"
 }
 ```
@@ -57,7 +57,7 @@ Deneme süreniz için bunu devre dışı bırakmanızı öneririz.
 
 ### Kod sahipliği
 
-**opencode tarafından üretilen tüm kodlara sahipsiniz.** Herhangi bir lisans kısıtlaması veya mülkiyet iddiası yoktur.
+**codetutor tarafından üretilen tüm kodlara sahipsiniz.** Herhangi bir lisans kısıtlaması veya mülkiyet iddiası yoktur.
 
 ---
 
@@ -93,7 +93,7 @@ Bu, opencode'un mevcut kimlik yönetimi sisteminiz aracılığıyla dahili AI a�
 
 ### Dahili AI ağ geçidi
 
-Merkezi yapılandırmayla opencode yalnızca dahili AI ağ geçidinizi kullanacak şekilde de yapılandırılabilir.
+Merkezi yapılandırmayla codetutor yalnızca dahili AI ağ geçidinizi kullanacak şekilde de yapılandırılabilir.
 
 Ayrıca tüm isteklerin kuruluşunuzun onaylı altyapısından geçmesini sağlayarak diğer tüm AI sağlayıcılarını devre dışı bırakabilirsiniz.
 
@@ -120,7 +120,7 @@ opencode Enterprise, kodlarının ve verilerinin altyapılarından asla ayrılma
 <details>
 <summary>opencode Enterprise'a nasıl başlarım?</summary>
 
-Ekibinizle dahili bir denemeyle başlayın. opencode varsayılan olarak kodunuzu veya içerik verilerinizi saklamaz, bu da başlamayı kolaylaştırır.
+Ekibinizle dahili bir denemeyle başlayın. codetutor varsayılan olarak kodunuzu veya içerik verilerinizi saklamaz, bu da başlamayı kolaylaştırır.
 
 Daha sonra fiyatlandırma ve uygulama seçeneklerini görüşmek için **<a href={email}>bizimle iletişime geçin</a>**.
 
@@ -136,7 +136,7 @@ Koltuk başına kurumsal fiyatlandırma sunuyoruz. Kendi LLM ağ geçidiniz vars
 <details>
 <summary>Verilerim opencode Enterprise ile güvende mi?</summary>
 
-Evet. opencode kodunuzu veya içerik verilerinizi saklamaz. Tüm işlemler yerel olarak veya AI sağlayıcınıza doğrudan API çağrıları yoluyla gerçekleşir. Merkezi yapılandırma ve SSO entegrasyonuyla verileriniz kuruluşunuzun altyapısında güvende kalır.
+Evet. codetutor kodunuzu veya içerik verilerinizi saklamaz. Tüm işlemler yerel olarak veya AI sağlayıcınıza doğrudan API çağrıları yoluyla gerçekleşir. Merkezi yapılandırma ve SSO entegrasyonuyla verileriniz kuruluşunuzun altyapısında güvende kalır.
 
 </details>
 
@@ -151,7 +151,7 @@ opencode, Bun'un yerel `.npmrc` dosya desteği aracılığıyla özel npm kayıt
 npm login --registry=https://your-company.jfrog.io/api/npm/npm-virtual/
 ```
 
-Bu, kimlik doğrulama ayrıntılarını içeren `~/.npmrc` öğesini oluşturur. opencode otomatik olarak
+Bu, kimlik doğrulama ayrıntılarını içeren `~/.npmrc` öğesini oluşturur. codetutor otomatik olarak
 bunu alır.
 
 :::caution

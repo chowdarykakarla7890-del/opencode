@@ -23,6 +23,19 @@ import { LocationServiceMap, locationServiceMapLayer } from "@opencode-ai/core/l
 import { Reference } from "@opencode-ai/core/reference"
 import { MCP } from "@/mcp"
 import { PermissionV1 } from "@opencode-ai/core/v1/permission"
+import type { LearnerLevel } from "@codetutor/curriculum"
+
+export function learner(level: LearnerLevel | undefined) {
+  const selected = level ?? "beginner"
+  const source = level ? "saved learner setting" : "safe default because no learner level is saved"
+  return [
+    "<learner_profile>",
+    `  <level>${selected}</level>`,
+    `  <source>${source}</source>`,
+    "  <instruction>Use this level for teaching depth and pacing. The user's explicit request still controls whether to explain, guide, review, or edit.</instruction>",
+    "</learner_profile>",
+  ].join("\n")
+}
 
 export function provider(model: Provider.Model) {
   if (model.api.id.includes("muse")) {

@@ -17,6 +17,8 @@ const pkg = JSON.parse(originalText) as {
   version: string
   exports: Record<string, unknown>
 }
+pkg.name = "codetutor-sdk"
+pkg.version = Script.version
 function transformExports(exports: Record<string, unknown>) {
   return Object.fromEntries(
     Object.entries(exports).map(([key, value]) => {
@@ -38,7 +40,7 @@ if (await published(pkg.name, pkg.version)) {
   await Bun.write("package.json", JSON.stringify(pkg, null, 2))
   try {
     await $`bun pm pack`
-    await $`npm publish *.tgz --tag ${Script.channel} --access public`
+    await $`npm publish *.tgz --provenance --tag ${Script.channel} --access public`
   } finally {
     await Bun.write("package.json", originalText)
   }

@@ -1,9 +1,9 @@
 ---
 title: Kurallar
-description: opencode için özel talimatları ayarlayın.
+description: codetutor için özel talimatları ayarlayın.
 ---
 
-Bir `AGENTS.md` dosyası oluşturarak opencode için özel talimatlar verebilirsiniz. Bu, Cursor rules yaklaşımına benzer. Özel projeniz için davranışını özelleştirmek amacıyla LLM'in içeriğine dahil edilecek talimatları içerir.
+Bir `AGENTS.md` dosyası oluşturarak codetutor için özel talimatlar verebilirsiniz. Bu, Cursor rules yaklaşımına benzer. Özel projeniz için davranışını özelleştirmek amacıyla LLM'in içeriğine dahil edilecek talimatları içerir.
 
 ---
 
@@ -54,7 +54,7 @@ Buraya projeye özel talimatlar ekliyoruz ve bu, ekibiniz arasında paylaşılac
 
 ## Türler
 
-opencode ayrıca `AGENTS.md` dosyasının birden fazla konumdan okunmasını da destekler. Ve bu farklı amaçlara hizmet ediyor.
+codetutor ayrıca `AGENTS.md` dosyasının birden fazla konumdan okunmasını da destekler. Ve bu farklı amaçlara hizmet ediyor.
 
 ### Proje
 
@@ -62,7 +62,7 @@ Projeye özel kurallar için proje kökünüze bir `AGENTS.md` yerleştirin. Bun
 
 ### Global
 
-Ayrıca `~/.config/opencode/AGENTS.md` dosyasında genel kurallara sahip olabilirsiniz. Bu, tüm opencode oturumlarına uygulanır.
+Ayrıca `~/.config/opencode/AGENTS.md` dosyasında genel kurallara sahip olabilirsiniz. Bu, tüm codetutor oturumlarına uygulanır.
 
 Bu Git'e kaydedilmediği veya ekibinizle paylaşılmadığı için, LLM'ın uyması gereken kişisel kuralları belirtmek için bunu kullanmanızı öneririz.
 
@@ -77,9 +77,9 @@ opencode, Claude Code'dan geçiş yapan kullanıcılar için yedek olarak Claude
 Claude Code uyumluluğunu kapatmak için aşağıdaki ortam değişkenlerinden birini ayarlayın:
 
 ```bash
-export OPENCODE_DISABLE_CLAUDE_CODE=1        # Disable all .claude support
-export OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=1 # Disable only ~/.claude/CLAUDE.md
-export OPENCODE_DISABLE_CLAUDE_CODE_SKILLS=1 # Disable only .claude/skills
+export CODETUTOR_DISABLE_CLAUDE_CODE=1        # Disable all .claude support
+export CODETUTOR_DISABLE_CLAUDE_CODE_PROMPT=1 # Disable only ~/.claude/CLAUDE.md
+export CODETUTOR_DISABLE_CLAUDE_CODE_SKILLS=1 # Disable only .claude/skills
 ```
 
 ---
@@ -98,22 +98,22 @@ Her kategoride ilk eşleşen dosya kazanır. Örneğin, hem `AGENTS.md` hem de `
 
 ## Özel talimatlar
 
-Özel talimat dosyalarını `opencode.json` veya global `~/.config/opencode/opencode.json`'de belirtebilirsiniz. Bu, sizin ve ekibinizin, mevcut kuralları AGENTS.md'ye kopyalamak yerine yeniden kullanmasına olanak tanır.
+Özel talimat dosyalarını `codetutor.json` veya global `~/.config/opencode/codetutor.json`'de belirtebilirsiniz. Bu, sizin ve ekibinizin, mevcut kuralları AGENTS.md'ye kopyalamak yerine yeniden kullanmasına olanak tanır.
 
 Örnek:
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "instructions": ["CONTRIBUTING.md", "docs/guidelines.md", ".cursor/rules/*.md"]
 }
 ```
 
 Web'den talimatlar yüklemek için uzak URL'leri de kullanabilirsiniz.
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "instructions": ["https://raw.githubusercontent.com/my-org/shared-rules/main/style.md"]
 }
 ```
@@ -128,13 +128,13 @@ Tüm talimat dosyaları `AGENTS.md` dosyalarınızla birleştirilir.
 
 Opencode, `AGENTS.md`'daki dosya referanslarını otomatik olarak ayrıştırmasa da, benzer işlevleri iki şekilde elde edebilirsiniz:
 
-### opencode.json'u kullanma
+### codetutor.json'u kullanma
 
-Önerilen yaklaşım, `instructions`'deki `opencode.json` alanını kullanmaktır:
+Önerilen yaklaşım, `instructions`'deki `codetutor.json` alanını kullanmaktır:
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "instructions": ["docs/development-standards.md", "test/testing-guidelines.md", "packages/*/AGENTS.md"]
 }
 ```
@@ -176,5 +176,5 @@ Bu yaklaşım şunları yapmanızı sağlar:
 - opencode'un dosyaları yalnızca belirli bir görev için gerektiğinde yüklediğinden emin olun
 
 :::tip
-Monorepo'lar veya ortak standartlara sahip projeler için, `opencode.json`'yi glob desenleriyle (`packages/*/AGENTS.md` gibi) kullanmak, manuel talimatlara göre daha sürdürülebilirdir.
+Monorepo'lar veya ortak standartlara sahip projeler için, `codetutor.json`'yi glob desenleriyle (`packages/*/AGENTS.md` gibi) kullanmak, manuel talimatlara göre daha sürdürülebilirdir.
 :::

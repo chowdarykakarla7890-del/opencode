@@ -48,6 +48,7 @@ it.instance("returns default native agents when no config", () =>
   Effect.gen(function* () {
     const agents = yield* load((svc) => svc.list())
     const names = agents.map((a) => a.name)
+    expect(names).toContain("tutor")
     expect(names).toContain("build")
     expect(names).toContain("plan")
     expect(names).toContain("general")
@@ -69,14 +70,14 @@ it.instance("build agent has correct default properties", () =>
   }),
 )
 
-it.instance("plan agent denies edits except .opencode/plans/*", () =>
+it.instance("plan agent denies edits except .codetutor/plans/*", () =>
   Effect.gen(function* () {
     const plan = yield* load((svc) => svc.get("plan"))
     expect(plan).toBeDefined()
     // Wildcard is denied
     expect(evalPerm(plan, "edit")).toBe("deny")
     // But specific path is allowed
-    expect(Permission.evaluate("edit", ".opencode/plans/foo.md", plan!.permission).action).toBe("allow")
+    expect(Permission.evaluate("edit", ".codetutor/plans/foo.md", plan!.permission).action).toBe("allow")
   }),
 )
 
@@ -598,7 +599,7 @@ it.instance(
   () =>
     Effect.gen(function* () {
       const test = yield* TestInstance
-      const skillDir = path.join(test.directory, ".opencode", "skill", "perm-skill")
+      const skillDir = path.join(test.directory, ".codetutor", "skill", "perm-skill")
       yield* Effect.promise(() =>
         Bun.write(
           path.join(skillDir, "SKILL.md"),
@@ -612,11 +613,11 @@ description: Permission skill.
         ),
       )
 
-      const home = process.env.OPENCODE_TEST_HOME
-      process.env.OPENCODE_TEST_HOME = test.directory
+      const home = process.env.CODETUTOR_TEST_HOME
+      process.env.CODETUTOR_TEST_HOME = test.directory
       yield* Effect.addFinalizer(() =>
         Effect.sync(() => {
-          process.env.OPENCODE_TEST_HOME = home
+          process.env.CODETUTOR_TEST_HOME = home
         }),
       )
 
@@ -646,18 +647,21 @@ it.instance(
   },
 )
 
-it.instance("defaultAgent returns build when no default_agent config", () =>
+it.instance("defaultAgent returns tutor when no default_agent config", () =>
   Effect.gen(function* () {
     const agent = yield* load((svc) => svc.defaultAgent())
-    expect(agent).toBe("build")
+    expect(agent).toBe("tutor")
   }),
 )
 
-it.instance("defaultInfo returns resolved build agent when no default_agent config", () =>
+it.instance("defaultInfo returns resolved tutor agent when no default_agent config", () =>
   Effect.gen(function* () {
     const agent = yield* load((svc) => svc.defaultInfo())
-    expect(agent.name).toBe("build")
+    expect(agent.name).toBe("tutor")
     expect(agent.mode).toBe("primary")
+    expect(agent.prompt).toContain("CodeTutor is editor-independent")
+    expect(agent.prompt).toContain("start CodeTutor from the repository root or pass the project path")
+    expect(agent.prompt).toContain('For "build", "implement", "fix", "create", "update", "refactor"')
   }),
 )
 
@@ -725,16 +729,16 @@ it.instance(
 )
 
 it.instance(
-  "defaultAgent returns plan when build is disabled and default_agent not set",
+  "defaultAgent falls back to the next visible primary when tutor and build are disabled",
   () =>
     Effect.gen(function* () {
       const agent = yield* load((svc) => svc.defaultAgent())
-      // build is disabled, so it should return plan (next primary agent)
       expect(agent).toBe("plan")
     }),
   {
     config: {
       agent: {
+        tutor: { disable: true },
         build: { disable: true },
       },
     },
@@ -747,6 +751,7 @@ it.instance(
   {
     config: {
       agent: {
+        tutor: { disable: true },
         build: { disable: true },
         plan: { disable: true },
       },

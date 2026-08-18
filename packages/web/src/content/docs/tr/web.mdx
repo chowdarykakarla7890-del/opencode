@@ -12,17 +12,17 @@ opencode, tarayıcınızda bir web uygulaması olarak çalışabilir ve bir term
 Aşağıdakileri çalıştırarak web arayüzünü başlatın:
 
 ```bash
-opencode web
+codetutor web
 ```
 
 Bu, `127.0.0.1` üzerinde rastgele kullanılabilir bir bağlantı noktasına sahip yerel bir sunucuyu başlatır ve opencode'u varsayılan tarayıcınızda otomatik olarak açar.
 
 :::caution
-`OPENCODE_SERVER_PASSWORD` ayarlanmadıysa sunucunun güvenliği kaldırılacaktır. Bu, yerel kullanım için iyidir ancak ağ erişimi için ayarlanmalıdır.
+`CODETUTOR_SERVER_PASSWORD` ayarlanmadıysa sunucunun güvenliği kaldırılacaktır. Bu, yerel kullanım için iyidir ancak ağ erişimi için ayarlanmalıdır.
 :::
 
 :::tip[Windows Kullanıcıları]
-En iyi deneyim için PowerShell yerine `opencode web`'yi [WSL](/docs/windows-wsl)'den çalıştırın. Bu, uygun dosya sistemi erişimini ve terminal entegrasyonunu sağlar.
+En iyi deneyim için PowerShell yerine `codetutor web`'yi [WSL](/docs/windows-wsl)'den çalıştırın. Bu, uygun dosya sistemi erişimini ve terminal entegrasyonunu sağlar.
 :::
 
 ---
@@ -33,10 +33,10 @@ Web sunucusunu komut satırı bayraklarıyla veya [config dosyanızda](/docs/con
 
 ### Port
 
-opencode varsayılan olarak kullanılabilir bir bağlantı noktasını seçer. Bir bağlantı noktası belirtebilirsiniz:
+codetutor varsayılan olarak kullanılabilir bir bağlantı noktasını seçer. Bir bağlantı noktası belirtebilirsiniz:
 
 ```bash
-opencode web --port 4096
+codetutor web --port 4096
 ```
 
 ### Ana makine adı
@@ -44,10 +44,10 @@ opencode web --port 4096
 Varsayılan olarak sunucu `127.0.0.1` (yalnızca localhost) öğesine bağlanır. opencode'u ağınızda erişilebilir kılmak için:
 
 ```bash
-opencode web --hostname 0.0.0.0
+codetutor web --hostname 0.0.0.0
 ```
 
-`0.0.0.0` kullanıldığında, opencode hem yerel hem de ağ adreslerini gösterecektir:
+`0.0.0.0` kullanıldığında, codetutor hem yerel hem de ağ adreslerini gösterecektir:
 
 ```
   Local access:       http://localhost:4096
@@ -59,15 +59,15 @@ opencode web --hostname 0.0.0.0
 Sunucunuzun yerel ağda bulunabilir olmasını sağlamak için mDNS'yi etkinleştirin:
 
 ```bash
-opencode web --mdns
+codetutor web --mdns
 ```
 
-Bu, ana bilgisayar adını otomatik olarak `0.0.0.0` olarak ayarlar ve sunucuyu `opencode.local` olarak tanıtır.
+Bu, ana bilgisayar adını otomatik olarak `0.0.0.0` olarak ayarlar ve sunucuyu `codetutor.local` olarak tanıtır.
 
 Aynı ağ üzerinde birden fazla örneği çalıştıracak şekilde mDNS alan adını özelleştirebilirsiniz:
 
 ```bash
-opencode web --mdns --mdns-domain myproject.local
+codetutor web --mdns --mdns-domain myproject.local
 ```
 
 ### CORS
@@ -75,24 +75,24 @@ opencode web --mdns --mdns-domain myproject.local
 CORS'a yönelik ek alan adlarına izin vermek için (özel ön uçlar için kullanışlıdır):
 
 ```bash
-opencode web --cors https://example.com
+codetutor web --cors https://example.com
 ```
 
 ### Kimlik Doğrulaması
 
-Erişimi korumak için `OPENCODE_SERVER_PASSWORD` ortam değişkenini kullanarak bir parola ayarlayın:
+Erişimi korumak için `CODETUTOR_SERVER_PASSWORD` ortam değişkenini kullanarak bir parola ayarlayın:
 
 ```bash
-OPENCODE_SERVER_PASSWORD=secret opencode web
+CODETUTOR_SERVER_PASSWORD=secret codetutor web
 ```
 
-Kullanıcı adı varsayılan olarak `opencode` şeklindedir ancak `OPENCODE_SERVER_USERNAME` ile değiştirilebilir.
+Kullanıcı adı varsayılan olarak `codetutor` şeklindedir ancak `CODETUTOR_SERVER_USERNAME` ile değiştirilebilir.
 
 ---
 
 ## Web Arayüzünü Kullanma
 
-Web arayüzü başlatıldığında opencode oturumlarınıza erişim sağlar.
+Web arayüzü başlatıldığında codetutor oturumlarınıza erişim sağlar.
 
 ### Oturum
 
@@ -114,10 +114,10 @@ Bağlı sunucuları ve durumlarını görüntülemek için "Sunucuları Gör" se
 
 ```bash
 # Start the web server
-opencode web --port 4096
+codetutor web --port 4096
 
 # In another terminal, attach the TUI
-opencode attach http://localhost:4096
+codetutor attach http://localhost:4096
 ```
 
 Bu, aynı oturumları ve durumu paylaşarak hem web arayüzünü hem de terminali aynı anda kullanmanıza olanak tanır.
@@ -126,7 +126,7 @@ Bu, aynı oturumları ve durumu paylaşarak hem web arayüzünü hem de terminal
 
 ## Yapılandırma Dosyası
 
-Sunucu ayarlarını `opencode.json` yapılandırma dosyanızda da yapılandırabilirsiniz:
+Sunucu ayarlarını `codetutor.json` yapılandırma dosyanızda da yapılandırabilirsiniz:
 
 ```json
 {

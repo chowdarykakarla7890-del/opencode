@@ -15,7 +15,7 @@ ACP — это открытый протокол, который стандар�
 
 ## Настройка
 
-Чтобы использовать opencode через ACP, настройте свой редактор для запуска команды `opencode acp`.
+Чтобы использовать opencode через ACP, настройте свой редактор для запуска команды `codetutor acp`.
 
 Команда запускает opencode как ACP-совместимый подпроцесс, который взаимодействует с вашим редактором через JSON-RPC через stdio.
 
@@ -30,7 +30,7 @@ ACP — это открытый протокол, который стандар�
 ```json title="~/.config/zed/settings.json"
 {
   "agent_servers": {
-    "OpenCode": {
+    "CodeTutor": {
       "command": "opencode",
       "args": ["acp"]
     }
@@ -51,7 +51,7 @@ ACP — это открытый протокол, который стандар�
         {
           "agent": {
             "custom": {
-              "name": "OpenCode",
+              "name": "CodeTutor",
               "command": {
                 "command": "opencode",
                 "args": ["acp"]
@@ -74,7 +74,7 @@ ACP — это открытый протокол, который стандар�
 ```json title="acp.json"
 {
   "agent_servers": {
-    "OpenCode": {
+    "CodeTutor": {
       "command": "/absolute/path/bin/opencode",
       "args": ["acp"]
     }

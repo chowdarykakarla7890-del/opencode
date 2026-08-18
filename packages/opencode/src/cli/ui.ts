@@ -3,23 +3,21 @@ import { Schema } from "effect"
 import { logo as glyphs } from "./logo"
 
 const wordmark = [
-  `⠀                                ▄     `,
-  `█▀▀█ █▀▀█ █▀▀█ █▀▀▄ █▀▀▀ █▀▀█ █▀▀█ █▀▀█`,
-  `█  █ █  █ █▀▀▀ █  █ █    █  █ █  █ █▀▀▀`,
-  `▀▀▀▀ █▀▀▀ ▀▀▀▀ ▀  ▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀ ▀▀▀▀`,
+  `  █▀▀ █▀█ █▀▄ █▀▀   ▀█▀ █ █ ▀█▀ █▀█ █▀█`,
+  `  █▄▄ █▄█ █▄▀ ██▄    █  █▄█  █  █▄█ █▀▄`,
 ]
 
 export class CancelledError extends Schema.TaggedErrorClass<CancelledError>()("UICancelledError", {}) {}
 
 export const Style = {
-  TEXT_HIGHLIGHT: "\x1b[96m",
-  TEXT_HIGHLIGHT_BOLD: "\x1b[96m\x1b[1m",
+  TEXT_HIGHLIGHT: "\x1b[38;5;99m",
+  TEXT_HIGHLIGHT_BOLD: "\x1b[38;5;99m\x1b[1m",
   TEXT_DIM: "\x1b[90m",
   TEXT_DIM_BOLD: "\x1b[90m\x1b[1m",
   TEXT_NORMAL: "\x1b[0m",
   TEXT_NORMAL_BOLD: "\x1b[1m",
-  TEXT_WARNING: "\x1b[93m",
-  TEXT_WARNING_BOLD: "\x1b[93m\x1b[1m",
+  TEXT_WARNING: "\x1b[38;5;214m",
+  TEXT_WARNING_BOLD: "\x1b[38;5;214m\x1b[1m",
   TEXT_DANGER: "\x1b[91m",
   TEXT_DANGER_BOLD: "\x1b[91m\x1b[1m",
   TEXT_SUCCESS: "\x1b[92m",
@@ -59,14 +57,14 @@ export function logo(pad?: string) {
   const result: string[] = []
   const reset = "\x1b[0m"
   const left = {
-    fg: "\x1b[90m",
-    shadow: "\x1b[38;5;235m",
-    bg: "\x1b[48;5;235m",
+    fg: "\x1b[38;5;99m",
+    shadow: "\x1b[38;5;54m",
+    bg: "\x1b[48;5;54m",
   }
   const right = {
-    fg: reset,
-    shadow: "\x1b[38;5;238m",
-    bg: "\x1b[48;5;238m",
+    fg: "\x1b[38;5;214m",
+    shadow: "\x1b[38;5;94m",
+    bg: "\x1b[48;5;94m",
   }
   const gap = " "
   const draw = (line: string, fg: string, shadow: string, bg: string) => {

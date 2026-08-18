@@ -1,7 +1,14 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "@opencode-ai/plugin",
-  "version": "1.18.18",
+  "version": "0.1.0-beta.1",
+  "description": "Plugin API for extending CodeTutor.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chowdarykakarla7890-del/opencode.git",
+    "directory": "packages/plugin"
+  },
+  "homepage": "https://codetutor-docs.vercel.app",
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -18,7 +25,9 @@
     "./v2/promise": "./src/v2/promise/index.ts"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "NOTICE"
   ],
   "dependencies": {
     "@ai-sdk/provider": "3.0.8",

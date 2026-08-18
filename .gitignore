@@ -20,7 +20,7 @@ ts-dist
 /result
 refs
 Session.vim
-/opencode.json
+/codetutor.json
 a.out
 target
 .scripts
@@ -32,3 +32,5 @@ UPCOMING_CHANGELOG.md
 logs/
 *.bun-build
 tsconfig.tsbuildinfo
+.vercel
+.env*

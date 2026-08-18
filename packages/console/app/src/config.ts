@@ -3,11 +3,11 @@
  */
 export const config = {
   // Base URL
-  baseUrl: "https://opencode.ai",
+  baseUrl: "https://codetutor-docs.vercel.app",
 
   // GitHub
   github: {
-    repoUrl: "https://github.com/anomalyco/opencode",
+    repoUrl: "https://github.com/chowdarykakarla7890-del/opencode",
     starsFormatted: {
       compact: "195K",
       full: "195,000",

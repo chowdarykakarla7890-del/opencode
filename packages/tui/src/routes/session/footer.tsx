@@ -5,9 +5,11 @@ import { useDirectory } from "../../context/directory"
 import { useConnected } from "../../component/use-connected"
 import { createStore } from "solid-js/store"
 import { useRoute } from "../../context/route"
+import { useStudioPresentation } from "../../ui/studio"
 
 export function Footer() {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const sync = useSync()
   const route = useRoute()
   const mcp = createMemo(() => Object.values(sync.data.mcp).filter((x) => x.status === "connected").length)
@@ -50,7 +52,17 @@ export function Footer() {
   })
 
   return (
-    <box flexDirection="row" justifyContent="space-between" gap={1} flexShrink={0}>
+    <box
+      flexDirection="row"
+      justifyContent="space-between"
+      gap={1}
+      flexShrink={0}
+      border={studio.enabled() ? ["top"] : undefined}
+      borderColor={studio.enabled() ? theme.borderSubtle : undefined}
+      backgroundColor={studio.enabled() ? theme.backgroundPanel : undefined}
+      paddingLeft={studio.enabled() ? 1 : 0}
+      paddingRight={studio.enabled() ? 1 : 0}
+    >
       <text fg={theme.textMuted}>{directory()}</text>
       <box gap={2} flexDirection="row" flexShrink={0}>
         <Switch>

@@ -1,6 +1,6 @@
 ---
 title: Paylasim
-description: opencode konusmalarini genel baglantilarla paylasin.
+description: codetutor konusmalarini genel baglantilarla paylasin.
 ---
 
 opencode'un paylasim ozelligi, konusmalariniz icin genel baglantilar olusturmanizi saglar. Boylece ekip arkadaslarinizla birlikte calisabilir veya diger kisilerden yardim alabilirsiniz.
@@ -29,7 +29,7 @@ opencode, konusmalarin nasil paylasilacagini kontrol eden uc farkli paylasim mod
 
 ### Manuel (varsayilan)
 
-Varsayilan olarak opencode manuel paylasim modunu kullanir. Oturumlar otomatik paylasilmaz, ancak `/share` komutuyla manuel olarak paylasabilirsiniz:
+Varsayilan olarak codetutor manuel paylasim modunu kullanir. Oturumlar otomatik paylasilmaz, ancak `/share` komutuyla manuel olarak paylasabilirsiniz:
 
 ```
 /share
@@ -39,9 +39,9 @@ Bu komut benzersiz bir URL uretir ve panoya kopyalar.
 
 Manuel modu acikca ayarlamak icin [config dosyaniza](/docs/config) sunu ekleyin:
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "manual"
 }
 ```
@@ -52,9 +52,9 @@ Manuel modu acikca ayarlamak icin [config dosyaniza](/docs/config) sunu ekleyin:
 
 Tum yeni konusmalar icin otomatik paylasimi acmak isterseniz, [config dosyanizda](/docs/config) `share` degerini `"auto"` yapin:
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "auto"
 }
 ```
@@ -67,14 +67,14 @@ Otomatik paylasim acikken her yeni konusma otomatik olarak paylasilir ve bir bag
 
 Paylasimi tamamen kapatmak icin [config dosyanizda](/docs/config) `share` degerini `"disabled"` yapin:
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "disabled"
 }
 ```
 
-Bunu belirli bir projede tum ekip icin zorunlu kilmak icin proje icindeki `opencode.json` dosyasina ekleyip Git'e commit edin.
+Bunu belirli bir projede tum ekip icin zorunlu kilmak icin proje icindeki `codetutor.json` dosyasina ekleyip Git'e commit edin.
 
 ---
 
@@ -124,4 +124,4 @@ Kurumsal kurulumlarda paylasim ozelligi su sekillerde yapilandirilabilir:
 - Sadece SSO ile dogrulanan kullanicilarla **sinirlandirilabilir**
 - Kendi altyapinizda **self-hosted** olarak calistirilabilir
 
-Kurulusunuzda opencode kullanimi icin [daha fazla bilgi alin](/docs/enterprise).
+Kurulusunuzda codetutor kullanimi icin [daha fazla bilgi alin](/docs/enterprise).

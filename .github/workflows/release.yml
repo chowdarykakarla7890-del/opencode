@@ -177,4 +177,16 @@ jobs:
         run: |
           prerelease=""
           case "${GITHUB_REF_NAME}" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "${GITHUB_REF_NAME}" artifacts/** --repo "${GITHUB_REPOSITORY}" --generate-notes $prerelease
+          mapfile -d '' assets < <(
+            find artifacts -type f \( \
+              -name 'codetutor-*.tgz' -o \
+              -name 'codetutor-desktop-*.dmg' -o \
+              -name 'codetutor-desktop-*.zip' -o \
+              -name 'codetutor-desktop-*.exe' -o \
+              -name 'codetutor-desktop-*.AppImage' -o \
+              -name 'codetutor-desktop-*.deb' -o \
+              -name 'codetutor-desktop-*.rpm' \
+            \) -print0
+          )
+          test "${#assets[@]}" -gt 0
+          gh release create "${GITHUB_REF_NAME}" "${assets[@]}" --repo "${GITHUB_REPOSITORY}" --generate-notes $prerelease

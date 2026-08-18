@@ -2,6 +2,7 @@
 
 import { render } from "solid-js/web"
 import { AppBaseProviders, AppInterface } from "@/app"
+import { AccountGate } from "@/account/account-gate"
 import { loadInitialLocale } from "@/context/language"
 import { type Platform, PlatformProvider } from "@/context/platform"
 import { createBrowserDraftStore } from "@/utils/draft-store"
@@ -115,6 +116,17 @@ const clearAuthToken = () => {
   history.replaceState(null, "", location.pathname + (params.size ? `?${params}` : "") + location.hash)
 }
 
+const browserFetch: typeof fetch = Object.assign(
+  (input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]) => {
+    const href = input instanceof Request ? input.url : input.toString()
+    const url = new URL(href, location.href)
+    const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1"
+    if (!loopback) return fetch(input, init)
+    return fetch(input, { ...init, targetAddressSpace: "local" } as RequestInit & { targetAddressSpace: "local" })
+  },
+  { preconnect: fetch.preconnect },
+)
+
 const platform: Platform = {
   platform: "web",
   draftStore: createBrowserDraftStore(),
@@ -122,6 +134,7 @@ const platform: Platform = {
   openExternal,
   restart,
   notify,
+  fetch: browserFetch,
   getDefaultServer: async () => {
     const stored = readDefaultServerUrl()
     return stored ? ServerConnection.Key.make(stored) : null
@@ -145,12 +158,14 @@ if (root instanceof HTMLElement) {
       () => (
         <PlatformProvider value={platform}>
           <AppBaseProviders locale={locale}>
-            <AppInterface
-              defaultServer={ServerConnection.Key.make(getDefaultUrl())}
-              canonicalLocalServer={ServerConnection.key(server)}
-              servers={[server]}
-              disableHealthCheck
-            />
+            <AccountGate>
+              <AppInterface
+                defaultServer={ServerConnection.Key.make(getDefaultUrl())}
+                canonicalLocalServer={ServerConnection.key(server)}
+                servers={[server]}
+                disableHealthCheck
+              />
+            </AccountGate>
           </AppBaseProviders>
         </PlatformProvider>
       ),

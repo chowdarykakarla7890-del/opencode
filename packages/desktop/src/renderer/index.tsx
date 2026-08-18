@@ -2,6 +2,7 @@
 
 import {
   ACCEPTED_FILE_EXTENSIONS,
+  AccountGate,
   AppBaseProviders,
   AppInterface,
   loadLocaleDict,
@@ -404,20 +405,22 @@ function DesktopRoot(props: { windowState: DesktopWindowState }) {
       <Show when={ready()} fallback={<LoadingSplash />}>
         <Show when={effectiveDefaultServer()} keyed>
           {(key) => (
-            <AppInterface
-              defaultServer={key}
-              servers={servers()}
-              router={router}
-              startup={onboarding.promise}
-              serverScoped={
-                <DesktopFirstLaunchOnboarding
-                  initialUrl={getLastActiveUrl(platform.windowID ?? "browser")}
-                  onLoaded={onboarding.resolve}
-                />
-              }
-            >
-              <Inner />
-            </AppInterface>
+            <AccountGate>
+              <AppInterface
+                defaultServer={key}
+                servers={servers()}
+                router={router}
+                startup={onboarding.promise}
+                serverScoped={
+                  <DesktopFirstLaunchOnboarding
+                    initialUrl={getLastActiveUrl(platform.windowID ?? "browser")}
+                    onLoaded={onboarding.resolve}
+                  />
+                }
+              >
+                <Inner />
+              </AppInterface>
+            </AccountGate>
           )}
         </Show>
       </Show>

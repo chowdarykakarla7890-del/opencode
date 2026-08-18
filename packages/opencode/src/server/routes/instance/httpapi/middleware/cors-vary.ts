@@ -1,5 +1,5 @@
 import { Effect } from "effect"
-import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
+import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 
 // effect-smol's HttpMiddleware.cors builds OPTIONS preflight responses by
 // spreading allowOrigin() and allowHeaders() into the same record. Both set
@@ -13,17 +13,22 @@ import { HttpRouter, HttpServerResponse } from "effect/unstable/http"
 export const corsVaryFix = HttpRouter.middleware(
   (effect) =>
     Effect.gen(function* () {
+      const request = yield* HttpServerRequest.HttpServerRequest
       const response = yield* effect
       const allowOrigin = response.headers["access-control-allow-origin"]
-      if (!allowOrigin || allowOrigin === "*") return response
+      const result =
+        allowOrigin && request.headers["access-control-request-private-network"] === "true"
+          ? HttpServerResponse.setHeader(response, "access-control-allow-private-network", "true")
+          : response
+      if (!allowOrigin || allowOrigin === "*") return result
 
-      const vary = response.headers["vary"]
-      if (!vary) return HttpServerResponse.setHeader(response, "vary", "Origin")
+      const vary = result.headers["vary"]
+      if (!vary) return HttpServerResponse.setHeader(result, "vary", "Origin")
 
       const tokens = vary.split(",").map((s) => s.trim().toLowerCase())
-      if (tokens.includes("origin") || tokens.includes("*")) return response
+      if (tokens.includes("origin") || tokens.includes("*")) return result
 
-      return HttpServerResponse.setHeader(response, "vary", `${vary}, Origin`)
+      return HttpServerResponse.setHeader(result, "vary", `${vary}, Origin`)
     }),
   { global: true },
 )

@@ -28,6 +28,8 @@ import { errorMessage } from "./util/error"
 import { PluginCommand } from "./cli/cmd/plug"
 import { Heap } from "./cli/heap"
 import { LearnCommand } from "./cli/cmd/learn"
+import { AccountCommand } from "./cli/cmd/account"
+import { accountRequiredForArgs } from "./cli/account-required"
 
 const args = hideBin(process.argv)
 
@@ -69,6 +71,17 @@ const cli = yargs(args)
       process.env.CODETUTOR_PURE = "1"
     }
 
+    if (accountRequiredForArgs(args)) {
+      const { AppRuntime } = await import("./effect/app-runtime")
+      const { Account } = await import("./account/account")
+      const { Option } = await import("effect")
+      const { CliError } = await import("./cli/effect-cmd")
+      const active = await AppRuntime.runPromise(Account.Service.use((service) => service.active()))
+      if (Option.isNone(active)) {
+        throw new CliError({ message: "Sign in with `codetutor account login` before starting CodeTutor." })
+      }
+    }
+
     Heap.start()
 
     process.env.AGENT = "1"
@@ -99,6 +112,7 @@ const cli = yargs(args)
   .command(PluginCommand)
   .command(DbCommand)
   .command(LearnCommand)
+  .command(AccountCommand)
   .fail((msg, err) => {
     if (
       msg?.startsWith("Unknown argument") ||

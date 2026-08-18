@@ -1,4 +1,5 @@
 export { AppBaseProviders, AppInterface } from "./app"
+export { AccountGate } from "./account/account-gate"
 export { useLayout } from "./context/layout"
 export { useServerSDK } from "./context/server-sdk"
 export { useServerSync } from "./context/server-sync"

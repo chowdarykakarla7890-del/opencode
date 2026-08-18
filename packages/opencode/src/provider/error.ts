@@ -48,7 +48,7 @@ function message(providerID: ProviderV2.ID, e: APICallError) {
     try {
       const body = JSON.parse(e.responseBody)
       // try to extract common error message fields
-      const errMsg = body.message || body.error || body.error?.message
+      const errMsg = body.message || body.error?.message || body.error
       if (errMsg && typeof errMsg === "string") {
         return `${msg}: ${errMsg}`
       }
@@ -58,10 +58,13 @@ function message(providerID: ProviderV2.ID, e: APICallError) {
     // provide a human-readable message instead of dumping raw markup
     if (/^\s*<!doctype|^\s*<html/i.test(e.responseBody)) {
       if (e.statusCode === 401) {
-        return "Unauthorized: request was blocked by a gateway or proxy. Your authentication token may be missing or expired — try running `codetutor auth login <your provider URL>` to re-authenticate."
+        return "Unauthorized: request was blocked by a gateway or proxy. Your authentication token may be missing or expired — try running `codetutor auth login --provider <provider-id>` to re-authenticate."
       }
       if (e.statusCode === 403) {
         return "Forbidden: request was blocked by a gateway or proxy. You may not have permission to access this resource — check your account and provider settings."
+      }
+      if (e.statusCode === 404) {
+        return "Upstream model endpoint was not found. The selected model may have been retired — run `codetutor models --refresh` and choose another model."
       }
       return msg
     }

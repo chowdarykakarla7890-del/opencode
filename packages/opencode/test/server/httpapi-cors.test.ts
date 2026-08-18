@@ -50,6 +50,7 @@ describe("HttpApi CORS", () => {
           origin: "http://localhost:3000",
           "access-control-request-method": "GET",
           "access-control-request-headers": "authorization",
+          "access-control-request-private-network": "true",
         }),
         HttpClient.execute,
       )
@@ -57,6 +58,7 @@ describe("HttpApi CORS", () => {
       expect(response.status).toBe(204)
       expect(response.headers["access-control-allow-origin"]).toBe("http://localhost:3000")
       expect(response.headers["access-control-allow-headers"]).toBe("authorization")
+      expect(response.headers["access-control-allow-private-network"]).toBe("true")
     }),
   )
 
@@ -111,12 +113,14 @@ describe("HttpApi CORS", () => {
             origin: "https://evil.example",
             "access-control-request-method": "GET",
             "access-control-request-headers": "authorization",
+            "access-control-request-private-network": "true",
           },
         }),
       )
 
       expect(rejected.status).toBe(204)
       expect(rejected.headers.get("access-control-allow-origin")).not.toBe("https://evil.example")
+      expect(rejected.headers.get("access-control-allow-private-network")).toBeNull()
     }),
   )
 })

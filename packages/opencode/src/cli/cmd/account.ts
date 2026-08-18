@@ -15,7 +15,9 @@ const dim = (value: string) => UI.Style.TEXT_DIM + value + UI.Style.TEXT_NORMAL
 
 const activeSuffix = (isActive: boolean) => (isActive ? dim(" (active)") : "")
 
-export const defaultConsoleUrl = "https://console.codetutor.ai"
+export const defaultAccountUrl = "https://codetutor-cloud.vercel.app"
+
+export const accountUrl = () => process.env.CODETUTOR_ACCOUNT_URL?.trim() || defaultAccountUrl
 
 export const formatAccountLabel = (account: { email: string; url: string }, isActive: boolean) =>
   `${account.email} ${dim(account.url)}${activeSuffix(isActive)}`
@@ -174,6 +176,18 @@ const openEffect = Effect.fn("open")(function* () {
   yield* Prompt.outro("Opened " + url)
 })
 
+const statusEffect = Effect.fn("status")(function* () {
+  const service = yield* Account.Service
+  const accounts = yield* service.list()
+  if (accounts.length === 0) return yield* println("Not logged in")
+
+  const active = yield* service.active()
+  for (const account of accounts) {
+    const isActive = Option.isSome(active) && active.value.id === account.id
+    yield* println(formatAccountLabel(account, isActive))
+  }
+})
+
 export const LoginCommand = effectCmd({
   command: "login [url]",
   describe: false,
@@ -185,7 +199,7 @@ export const LoginCommand = effectCmd({
     }),
   handler: Effect.fn("Cli.account.login")(function* (args) {
     UI.empty()
-    yield* Effect.orDie(loginEffect(args.url ?? defaultConsoleUrl))
+    yield* Effect.orDie(loginEffect(args.url ?? accountUrl()))
   }),
 })
 
@@ -234,18 +248,32 @@ export const OpenCommand = effectCmd({
   }),
 })
 
-export const ConsoleCommand = cmd({
-  command: "console",
+export const StatusCommand = effectCmd({
+  command: "status",
   describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.status")(function* () {
+    UI.empty()
+    yield* Effect.orDie(statusEffect())
+  }),
+})
+
+export const AccountCommand = cmd({
+  command: "account",
+  describe: "manage your CodeTutor account",
   builder: (yargs) =>
     yargs
       .command({
         ...LoginCommand,
-        describe: "log in to console",
+        describe: "log in to CodeTutor",
       })
       .command({
         ...LogoutCommand,
-        describe: "log out from console",
+        describe: "log out from CodeTutor",
+      })
+      .command({
+        ...StatusCommand,
+        describe: "show account status",
       })
       .command({
         ...SwitchCommand,
@@ -257,7 +285,7 @@ export const ConsoleCommand = cmd({
       })
       .command({
         ...OpenCommand,
-        describe: "open active console account",
+        describe: "open the active CodeTutor account",
       })
       .demandCommand(),
   async handler() {},

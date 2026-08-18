@@ -1,11 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import stripAnsi from "strip-ansi"
 
-import { defaultConsoleUrl, formatAccountLabel, formatOrgLine } from "../../src/cli/cmd/account"
+import { accountUrl, defaultAccountUrl, formatAccountLabel, formatOrgLine } from "../../src/cli/cmd/account"
 
-describe("console account display", () => {
-  test("uses console.codetutor.ai as the default login URL", () => {
-    expect(defaultConsoleUrl).toBe("https://console.codetutor.ai")
+describe("CodeTutor account display", () => {
+  test("uses the CodeTutor cloud deployment as the default login URL", () => {
+    expect(defaultAccountUrl).toBe("https://codetutor-cloud.vercel.app")
+    expect(accountUrl()).toBe(defaultAccountUrl)
   })
 
   test("includes the account url in account labels", () => {

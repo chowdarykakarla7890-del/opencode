@@ -1,0 +1,37 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/api/billing/checkout",
+      "destination": "/api/services?route=billing-checkout"
+    },
+    {
+      "source": "/api/billing/portal",
+      "destination": "/api/services?route=billing-portal"
+    },
+    {
+      "source": "/api/billing/webhook",
+      "destination": "/api/services?route=billing-webhook"
+    },
+    {
+      "source": "/api/ai/v1/chat/completions",
+      "destination": "/api/services?route=ai-chat"
+    },
+    {
+      "source": "/api/plans",
+      "destination": "/api/services?route=plans"
+    },
+    {
+      "source": "/api/usage",
+      "destination": "/api/services?route=usage"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "/api/auth/:path*"
+    },
+    {
+      "source": "/device",
+      "destination": "/api/device"
+    }
+  ]
+}

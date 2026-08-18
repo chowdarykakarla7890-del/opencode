@@ -39,10 +39,12 @@ export const { use: useModels, provider: ModelsProvider } = createSimpleContext(
 
     const available = createMemo(() =>
       providers.connected().flatMap((p) =>
-        Object.values(p.models).map((m) => ({
-          ...m,
-          provider: p,
-        })),
+        Object.values(p.models)
+          .filter((m) => m.capabilities.toolcall && m.capabilities.input.text && m.capabilities.output.text)
+          .map((m) => ({
+            ...m,
+            provider: p,
+          })),
       ),
     )
 

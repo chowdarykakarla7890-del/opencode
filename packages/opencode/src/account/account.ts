@@ -134,7 +134,7 @@ class TokenRefreshRequest extends Schema.Class<TokenRefreshRequest>("TokenRefres
   client_id: Schema.String,
 }) {}
 
-const clientId = "opencode-cli"
+const clientId = "codetutor-cli"
 const eagerRefreshThreshold = Duration.minutes(5)
 const eagerRefreshThresholdMs = Duration.toMillis(eagerRefreshThreshold)
 
@@ -175,7 +175,7 @@ export interface Interface {
   readonly orgs: (accountID: AccountID) => Effect.Effect<readonly Org[], AccountError>
   readonly config: (
     accountID: AccountID,
-    orgID: OrgID,
+    orgID?: OrgID,
   ) => Effect.Effect<Option.Option<Record<string, unknown>>, AccountError>
   readonly token: (accountID: AccountID) => Effect.Effect<Option.Option<AccessToken>, AccountError>
   readonly login: (url: string) => Effect.Effect<Login, AccountError>
@@ -360,7 +360,7 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
       yield* repo.use(next.accountID, Option.some(next.orgID))
     })
 
-    const config = Effect.fn("Account.config")(function* (accountID: AccountID, orgID: OrgID) {
+    const config = Effect.fn("Account.config")(function* (accountID: AccountID, orgID?: OrgID) {
       const resolved = yield* resolveAccess(accountID)
       if (Option.isNone(resolved)) return Option.none()
 
@@ -370,7 +370,7 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
         HttpClientRequest.get(`${account.url}/api/config`).pipe(
           HttpClientRequest.acceptJson,
           HttpClientRequest.bearerToken(accessToken),
-          HttpClientRequest.setHeaders({ "x-org-id": orgID }),
+          HttpClientRequest.setHeaders(orgID ? { "x-org-id": orgID } : {}),
         ),
       )
 

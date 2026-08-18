@@ -1985,9 +1985,28 @@ const layer = Layer.effect(
 
 const priority = ["gpt-5", "claude-sonnet-4", "big-pickle", "gemini-3-pro"]
 const smallModelFamilyPriority = ["gemini-flash", "gpt-nano", "claude-haiku"]
-export function sort<T extends { id: string }>(models: T[]) {
+export function sort<
+  T extends {
+    id: string
+    capabilities?: {
+      toolcall?: boolean
+      input?: { text?: boolean }
+      output?: { text?: boolean }
+    }
+  },
+>(models: T[]) {
   return sortBy(
     models,
+    [
+      (model) =>
+        model.capabilities === undefined ||
+        (model.capabilities.toolcall === true &&
+          model.capabilities.input?.text === true &&
+          model.capabilities.output?.text === true)
+          ? 1
+          : 0,
+      "desc",
+    ],
     [(model) => priority.findIndex((filter) => model.id.includes(filter)), "desc"],
     [(model) => (model.id.includes("latest") ? 0 : 1), "asc"],
     [(model) => model.id, "desc"],

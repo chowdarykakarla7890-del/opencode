@@ -9,6 +9,7 @@ import { Global } from "@opencode-ai/core/global"
 import fsNode from "fs/promises"
 import { Flag } from "@opencode-ai/core/flag/flag"
 import { Auth } from "../auth"
+import { Account } from "../account/account"
 import { Env } from "../env"
 import { applyEdits, modify } from "jsonc-parser"
 import { InstallationLocal, InstallationVersion } from "@opencode-ai/core/installation/version"
@@ -176,6 +177,7 @@ const layer = Layer.effect(
   Effect.gen(function* () {
     const fs = yield* FSUtil.Service
     const authSvc = yield* Auth.Service
+    const accountSvc = yield* Account.Service
     const env = yield* Env.Service
     const npmSvc = yield* Npm.Service
     const http = yield* HttpClient.HttpClient
@@ -388,6 +390,24 @@ const layer = Layer.effect(
             )
             yield* merge(source, next, "global")
             yield* Effect.logDebug("loaded remote config from well-known", { url })
+          }
+        }
+
+        const activeAccount = yield* accountSvc.active()
+        if (Option.isSome(activeAccount)) {
+          const remote = yield* accountSvc
+            .config(activeAccount.value.id, activeAccount.value.active_org_id ?? undefined)
+            .pipe(
+              Effect.catch((error) =>
+                Effect.logWarning("failed to load CodeTutor account config", { error: String(error) }).pipe(
+                  Effect.as(Option.none<Record<string, unknown>>()),
+                ),
+              ),
+            )
+          if (Option.isSome(remote)) {
+            const source = `${activeAccount.value.url}/api/config`
+            const next = yield* loadConfig(JSON.stringify(remote.value), { dir: activeAccount.value.url, source })
+            yield* merge(source, next, "global")
           }
         }
 
@@ -637,7 +657,7 @@ const layer = Layer.effect(
 export const node = LayerNode.make({
   service: Service,
   layer: layer,
-  deps: [FSUtil.node, Auth.node, Env.node, Npm.node, httpClient],
+  deps: [FSUtil.node, Auth.node, Account.node, Env.node, Npm.node, httpClient],
 })
 
 export * as Config from "./config"

@@ -24,6 +24,7 @@ async function publish(dir: string, name: string, version: string) {
   await $`bun pm pack`.cwd(dir)
   if (dryRun) return
   await publishTarball(dir)
+  await Bun.sleep(20_000)
 }
 
 async function publishTarball(dir: string, attempt = 1): Promise<void> {
@@ -34,7 +35,7 @@ async function publishTarball(dir: string, attempt = 1): Promise<void> {
   const retryable = /E429|Too Many Requests|rate limit/i.test(details)
   if (!retryable || attempt === 5) throw new Error(details || `npm publish failed with exit code ${result.exitCode}`)
 
-  await Bun.sleep(attempt * 15_000)
+  await Bun.sleep(attempt * 60_000)
   return publishTarball(dir, attempt + 1)
 }
 

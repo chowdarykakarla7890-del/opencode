@@ -846,6 +846,21 @@ test("provider.sort prioritizes preferred models", () => {
   expect(sorted[sorted.length - 1].id).not.toContain("sonnet-4")
 })
 
+test("provider.sort prefers coding-capable text models over media models", () => {
+  const sorted = Provider.sort([
+    {
+      id: "gemini-3-pro-image-preview",
+      capabilities: { toolcall: false, input: { text: true }, output: { text: false } },
+    },
+    {
+      id: "gemini-3.5-flash-lite",
+      capabilities: { toolcall: true, input: { text: true }, output: { text: true } },
+    },
+  ])
+
+  expect(sorted[0].id).toBe("gemini-3.5-flash-lite")
+})
+
 it.instance(
   "multiple providers can be configured simultaneously",
   Effect.gen(function* () {

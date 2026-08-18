@@ -114,6 +114,7 @@ jobs:
     env:
       CSC_IDENTITY_AUTO_DISCOVERY: "false"
       CODETUTOR_CHANNEL: ${{ contains(github.ref_name, '-') && 'beta' || 'prod' }}
+      NODE_OPTIONS: "--max-old-space-size=8192"
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

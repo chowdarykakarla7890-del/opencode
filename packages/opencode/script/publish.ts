@@ -23,13 +23,26 @@ async function publish(dir: string, name: string, version: string) {
   }
   await $`bun pm pack`.cwd(dir)
   if (dryRun) return
-  await $`npm publish *.tgz --provenance --access public --tag ${Script.channel}`.cwd(dir)
+  await publishTarball(dir)
+}
+
+async function publishTarball(dir: string, attempt = 1): Promise<void> {
+  const result = await $`npm publish *.tgz --provenance --access public --tag ${Script.channel}`.cwd(dir).nothrow()
+  if (result.exitCode === 0) return
+
+  const details = new TextDecoder().decode(result.stderr)
+  const retryable = /E429|Too Many Requests|rate limit/i.test(details)
+  if (!retryable || attempt === 5) throw new Error(details || `npm publish failed with exit code ${result.exitCode}`)
+
+  await Bun.sleep(attempt * 15_000)
+  return publishTarball(dir, attempt + 1)
 }
 
 const binaries: Record<string, string> = {}
 for (const filepath of new Bun.Glob("*/package.json").scanSync({ cwd: "./dist" })) {
-  const pkg = await Bun.file(`./dist/${filepath}`).json()
-  binaries[pkg.name] = pkg.version
+  const platform = await Bun.file(`./dist/${filepath}`).json()
+  if (platform.name === pkg.name) continue
+  binaries[platform.name] = platform.version
 }
 console.log("binaries", binaries)
 const version = Object.values(binaries)[0]
@@ -81,9 +94,8 @@ await Bun.file(`./dist/${pkg.name}/package.json`).write(
   ),
 )
 
-const tasks = Object.entries(binaries).map(async ([name]) => {
+for (const [name, version] of Object.entries(binaries)) {
   await Bun.file(`./dist/${name}/NOTICE`).write(await Bun.file("../../NOTICE").text())
-  await publish(`./dist/${name}`, name, binaries[name])
-})
-await Promise.all(tasks)
+  await publish(`./dist/${name}`, name, version)
+}
 await publish(`./dist/${pkg.name}`, pkg.name, version)

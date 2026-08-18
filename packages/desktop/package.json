@@ -7,7 +7,8 @@
   "license": "MIT",
   "homepage": "https://codetutor-docs.vercel.app",
   "author": {
-    "name": "CodeTutor"
+    "name": "CodeTutor",
+    "email": "313954780+chowdarykakarla7890-del@users.noreply.github.com"
   },
   "scripts": {
     "typecheck": "tsgo -b",

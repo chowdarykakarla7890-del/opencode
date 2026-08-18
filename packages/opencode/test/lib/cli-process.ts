@@ -6,11 +6,11 @@
 // the original /event race or #27371's invalid-model hang).
 //
 // Configuration flows through opencode's built-in test affordances:
-//   - OPENCODE_CONFIG_CONTENT      : provider config inline, no files to find
-//   - OPENCODE_TEST_HOME           : pins os.homedir() → tmpdir
-//   - OPENCODE_DISABLE_PROJECT_CONFIG : skip walking up for opencode.json
-//   - OPENCODE_PURE                : skip external plugin discovery + install
-//   - OPENCODE_DISABLE_AUTOUPDATE / AUTOCOMPACT / MODELS_FETCH : no background work
+//   - CODETUTOR_CONFIG_CONTENT      : provider config inline, no files to find
+//   - CODETUTOR_TEST_HOME           : pins os.homedir() → tmpdir
+//   - CODETUTOR_DISABLE_PROJECT_CONFIG : skip walking up for codetutor.json
+//   - CODETUTOR_PURE                : skip external plugin discovery + install
+//   - CODETUTOR_DISABLE_AUTOUPDATE / AUTOCOMPACT / MODELS_FETCH : no background work
 // Plus HOME / XDG_* pointing at the tmpdir for belt-and-suspenders isolation.
 //
 // Today only `opencode.run` is fully wired. The shape supports adding more
@@ -61,19 +61,19 @@ function forkStderrDrain(stream: ReadableStream<Uint8Array>, into: string[]) {
 
 function isolatedEnv(home: string, configJson: string): Record<string, string> {
   return {
-    OPENCODE_TEST_HOME: home,
+    CODETUTOR_TEST_HOME: home,
     HOME: home,
     XDG_CONFIG_HOME: path.join(home, ".config"),
     XDG_DATA_HOME: path.join(home, ".local/share"),
     XDG_STATE_HOME: path.join(home, ".local/state"),
     XDG_CACHE_HOME: path.join(home, ".cache"),
-    OPENCODE_CONFIG_CONTENT: configJson,
-    OPENCODE_DISABLE_PROJECT_CONFIG: "1",
-    OPENCODE_PURE: "1",
-    OPENCODE_DISABLE_AUTOUPDATE: "1",
-    OPENCODE_DISABLE_AUTOCOMPACT: "1",
-    OPENCODE_DISABLE_MODELS_FETCH: "1",
-    OPENCODE_AUTH_CONTENT: "{}",
+    CODETUTOR_CONFIG_CONTENT: configJson,
+    CODETUTOR_DISABLE_PROJECT_CONFIG: "1",
+    CODETUTOR_PURE: "1",
+    CODETUTOR_DISABLE_AUTOUPDATE: "1",
+    CODETUTOR_DISABLE_AUTOCOMPACT: "1",
+    CODETUTOR_DISABLE_MODELS_FETCH: "1",
+    CODETUTOR_AUTH_CONTENT: "{}",
   }
 }
 
@@ -91,7 +91,7 @@ export type RunHandle = {
 
 export type SpawnOpts = { readonly timeoutMs?: number; readonly env?: Record<string, string> }
 
-// Typed equivalent of constructing argv for `opencode run`. New flags should
+// Typed equivalent of constructing argv for `codetutor run`. New flags should
 // land here so tests stay grep-able and refactor-safe.
 export type RunOpts = SpawnOpts & {
   readonly model?: string
@@ -103,7 +103,7 @@ export type RunOpts = SpawnOpts & {
   readonly extraArgs?: string[]
 }
 
-// `opencode serve` is a long-lived process — it never exits on its own.
+// `codetutor serve` is a long-lived process — it never exits on its own.
 // `serve(opts)` therefore returns a handle inside the caller's Scope: the
 // subprocess is killed when the scope closes (test end), and the URL the
 // server actually bound to (port 0 means OS-assigned) is parsed off stdout.
@@ -130,7 +130,7 @@ export type ServeHandle = {
   readonly exited: Promise<number>
 }
 
-// `opencode acp` speaks newline-delimited JSON-RPC over stdin/stdout. It is
+// `codetutor acp` speaks newline-delimited JSON-RPC over stdin/stdout. It is
 // long-lived and exits cleanly when stdin is closed. The handle exposes the
 // duplex stream as send/receive rather than raw pipes so tests don't have to
 // reimplement framing on every call site.
@@ -156,11 +156,11 @@ export type OpencodeCli = {
   // High-level: run a single prompt against the test model. Short-lived.
   readonly run: (message: string, opts?: RunOpts) => Effect.Effect<RunResult>
   readonly startRun: (message: string, opts?: RunOpts) => Effect.Effect<RunHandle, never, Scope.Scope>
-  // Spawn `opencode serve` and wait until it's listening. Long-lived: the
+  // Spawn `codetutor serve` and wait until it's listening. Long-lived: the
   // returned handle is killed when the caller's Scope closes. Fails if the
   // listening line doesn't appear within `readyTimeoutMs`.
   readonly serve: (opts?: ServeOpts) => Effect.Effect<ServeHandle, Error, Scope.Scope>
-  // Spawn `opencode acp` and return a duplex JSON-RPC handle. Long-lived:
+  // Spawn `codetutor acp` and return a duplex JSON-RPC handle. Long-lived:
   // the subprocess exits on stdin close, which the scope finalizer triggers.
   readonly acp: (opts?: AcpOpts) => Effect.Effect<AcpHandle, Error, Scope.Scope>
   // Escape hatch: any CLI invocation with full control over argv. Used to test
@@ -266,7 +266,7 @@ export function withCliFixture<A, E>(
         ...opts,
         env: {
           ...opts.env,
-          OPENCODE_CONFIG_CONTENT: JSON.stringify({
+          CODETUTOR_CONFIG_CONTENT: JSON.stringify({
             ...testProviderConfig(llm.url),
             permission: opts.permission,
           }),
@@ -367,7 +367,7 @@ export function withCliFixture<A, E>(
           orElse: () =>
             Effect.fail(
               new Error(
-                `opencode serve did not become ready within ${readyTimeoutMs}ms\n` +
+                `codetutor serve did not become ready within ${readyTimeoutMs}ms\n` +
                   `stderr (last 2000):\n${stderrChunks.join("").slice(-2000)}`,
               ),
             ),

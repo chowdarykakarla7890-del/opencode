@@ -11,6 +11,17 @@ describe("prompt history", () => {
     ])
   })
 
+  test("ignores valid JSON with an invalid prompt shape", () => {
+    const malformed = [
+      JSON.stringify({ input: 1, parts: [] }),
+      JSON.stringify({ input: "missing parts" }),
+      JSON.stringify({ input: "invalid mode", mode: "other", parts: [] }),
+      JSON.stringify({ input: "invalid part", parts: [{ type: "file", mime: "text/plain" }] }),
+    ].join("\n")
+
+    expect(parsePromptHistory(`${malformed}\n${JSON.stringify(entry("valid"))}\n`)).toEqual([entry("valid")])
+  })
+
   test("retains only the newest entries", () => {
     const input = Array.from({ length: MAX_HISTORY_ENTRIES + 5 }, (_, index) =>
       JSON.stringify(entry(String(index))),

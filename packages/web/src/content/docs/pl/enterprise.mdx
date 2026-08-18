@@ -1,6 +1,6 @@
 ---
 title: Przedsiębiorstwo
-description: Bezpieczne korzystanie z opencode w Twojej organizacji.
+description: Bezpieczne korzystanie z codetutor w Twojej organizacji.
 ---
 
 import config from "../../../../config.mjs"
@@ -9,7 +9,7 @@ export const email = `mailto:${config.email}`
 opencode Przedsiębiorstwo jest przeznaczone dla organizacji, która ma dostęp do zasobów, że ich kod i dane nigdy nie opuszczą infrastruktury. Może zostać zarejestrowany za pomocą zapachuralizowanej konfiguracji, która integruje się z logowaniem jednokrotnym i uruchomieniem bramą AI.
 
 :::note
-opencode nie przechowuje żadnego kodu ani danych kontekstowych.
+codetutor nie przechowuje żadnego kodu ani danych kontekstowych.
 :::
 
 Aby skorzystać z pracy z opencode Przedsiębiorstwo:
@@ -21,13 +21,13 @@ Aby skorzystać z pracy z opencode Przedsiębiorstwo:
 
 ## Test
 
-opencode jest oprogramowaniem typu open source i nie przechowuje żadnego kodu ani danych kontekstowych, więc programiści mogą po prostu [zacząć](/docs/) i próbować próbną.
+codetutor jest oprogramowaniem typu open source i nie przechowuje żadnego kodu ani danych kontekstowych, więc programiści mogą po prostu [zacząć](/docs/) i próbować próbną.
 
 ---
 
 ### Obsługa danych
 
-**opencode nie dotyczy kodu źródłowego ani danych kontekstowych.** Całe zdarzenie odbywa się lokalnie lub poprzez bezpośrednio wywołane API do twojego dostawcy AI.
+**codetutor nie dotyczy kodu źródłowego ani danych kontekstowych.** Całe zdarzenie odbywa się lokalnie lub poprzez bezpośrednio wywołane API do twojego dostawcy AI.
 
 to, że korzystasz z usług dostawcy, lub dostawcy zaufania
 Brama AI, możesz bezpłatnie korzystać z opencode.
@@ -38,15 +38,15 @@ Zastrzeżeniem jest opcjonalna funkcja `/share`.
 
 #### Dzielenie się rozmowami
 
-Jeśli użytkownicy są połączeni z `/share`, połączenie jest połączone z danymi, które zostały przesłane do usług, które są udostępniane przez hosty tych użytkowników w opencode.ai.
+Jeśli użytkownicy są połączeni z `/share`, połączenie jest połączone z danymi, które zostały przesłane do usług, które są udostępniane przez hosty tych użytkowników w codetutor-docs.vercel.app.
 
 Dane są aktualnie dostępne przez sieć brzegową naszego CDN i są buforowane na brzegu w pobliżu Twoich użytkowników.
 
 Zalecamy tę opcję na okres próbny.
 
-```json title="opencode.json"
+```json title="codetutor.json"
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "share": "disabled"
 }
 ```
@@ -69,7 +69,7 @@ W przypadku opencode Enterprise model per-seat. Jeśli posiadasz własną bramk�
 
 ## Zastosowanie
 
-Gdy zasięgsz okres próbny i nadzorujesz użytkowanie z opencode na
+Gdy zasięgsz okres próbny i nadzorujesz użytkowanie z codetutor na
 swoją organizację, możesz **<a href={email}>skontaktować się z nami</a>**, aby omówić te dźwięki
 opcja cenowa i wdrożeniowa.
 
@@ -77,7 +77,7 @@ opcja cenowa i wdrożeniowa.
 
 ### Konfiguracja centralna
 
-Możliwości wykorzystania opencode tak, aby skorzystać z jednego zastosowania dla całej organizacji.
+Możliwości wykorzystania codetutor tak, aby skorzystać z jednego zastosowania dla całej organizacji.
 
 Tę zapachową konfigurację można zintegrować z dostawcą SSO i specyfikacje wszyscy użytkownicy mają dostęp wyłącznie do bram wewnętrznych AI.
 
@@ -85,15 +85,15 @@ Tę zapachową konfigurację można zintegrować z dostawcą SSO i specyfikacje 
 
 ### Integracja SSO
 
-Dzięki zastosowaniu konfiguracji opencode może zostać włączone z dostawcą SSO Twojej organizacji w celu uwierzytelnienia.
+Dzięki zastosowaniu konfiguracji codetutor może zostać włączone z dostawcą SSO Twojej organizacji w celu uwierzytelnienia.
 
-Dzięki temu opencode może uzyskać dane uwierzytelniające dla wewnętrznej bramy AI za pośrednictwem transmisji systemu zarządzania tożsamością.
+Dzięki temu codetutor może uzyskać dane uwierzytelniające dla wewnętrznej bramy AI za pośrednictwem transmisji systemu zarządzania tożsamością.
 
 ---
 
 ### Wewnętrzna bramka AI
 
-Dzięki zastosowaniu konfiguracji opencode można również skorzystać z tego, że można korzystać tylko z wewnętrznych bram AI.
+Dzięki zastosowaniu konfiguracji codetutor można również skorzystać z tego, że można korzystać tylko z wewnętrznych bram AI.
 
 Możesz także dołączyć do wszystkich innych dostawców sztucznej inteligencji, upewniając się, że wszystkie elementy przechodzą przez zatwierdzenie wykorzystania Twojej organizacji.
 
@@ -120,7 +120,7 @@ opencode Przedsiębiorstwo jest przeznaczone dla organizacji, która ma dostęp 
 <details>
 <summary>How do I get started with opencode Enterprise?</summary>
 
-Po prostu uruchom wersję próbną ze swoim. opencode urządzenia niezabezpieczone kodu ani danych kontekstowych, co ułatwia uruchomienie pracy.
+Po prostu uruchom wersję próbną ze swoim. codetutor urządzenia niezabezpieczone kodu ani danych kontekstowych, co ułatwia uruchomienie pracy.
 
 **<a href={email}>skontaktuj się z nami</a>**, aby omówić ceny i wybrać opcję.
 
@@ -136,14 +136,14 @@ Oferujemy ceny korporacyjne za jedno stanowisko. Jeśli posiadasz własną bramk
 <details>
 <summary>Is my data secure with opencode Enterprise?</summary>
 
-Tak. opencode nie przechowuje kodu ani danych kontekstowych. Całe zdarzenie odbywa się lokalnie lub poprzez bezpośrednie wywołanie API przez dostawcę AI. Dostęp do konfiguracji i integracji z logowaniem jednokrotnym Twoje dane pozostają bezpieczne w infrastrukturze organizacji.
+Tak. codetutor nie przechowuje kodu ani danych kontekstowych. Całe zdarzenie odbywa się lokalnie lub poprzez bezpośrednie wywołanie API przez dostawcę AI. Dostęp do konfiguracji i integracji z logowaniem jednokrotnym Twoje dane pozostają bezpieczne w infrastrukturze organizacji.
 
 </details>
 
 <details>
 <summary>Can we use our own private NPM registry?</summary>
 
-opencode obsługuje prywatny rejestry npm poprzez natywną usługę plików `.npmrc` Buna. Jeśli Twoja organizacja korzysta z rejestru prywatnego, takiego jak JFrog Artifactory, Nexus lub wylot, przed uruchomieniem opencode się, że programiści zostali uwierzytelnieni.
+codetutor obsługuje prywatny rejestry npm poprzez natywną usługę plików `.npmrc` Buna. Jeśli Twoja organizacja korzysta z rejestru prywatnego, takiego jak JFrog Artifactory, Nexus lub wylot, przed uruchomieniem codetutor się, że programiści zostali uwierzytelnieni.
 
 Aby zapewnić uwierzytelnianie w rejestrze prywatnym:
 
@@ -151,11 +151,11 @@ Aby zapewnić uwierzytelnianie w rejestrze prywatnym:
 npm login --registry=https://your-company.jfrog.io/api/npm/npm-virtual/
 ```
 
-Spowoduje to do `~/.npmrc` ze szczegółami uwierzytelniania. opencode zrobi to automatycznie
+Spowoduje to do `~/.npmrc` ze szczegółami uwierzytelniania. codetutor zrobi to automatycznie
 podniesc do.
 
 :::caution
-Przed uruchomieniem opencode musisz być zalogowany do rejestru prywatnego.
+Przed uruchomieniem codetutor musisz być zalogowany do rejestru prywatnego.
 :::
 
 Alternatywnie możesz skorzystać z pliku `.npmrc`:

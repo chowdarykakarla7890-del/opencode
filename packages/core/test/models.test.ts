@@ -7,27 +7,33 @@ import { LayerNode } from "@opencode-ai/core/effect/layer-node"
 import { Flag } from "@opencode-ai/core/flag/flag"
 import { Global } from "@opencode-ai/core/global"
 import { ModelsDev } from "@opencode-ai/core/models-dev"
+import { Hash } from "@opencode-ai/core/util/hash"
 import { it } from "./lib/effect"
 import { readFile, rm, writeFile, utimes, mkdir } from "fs/promises"
 import path from "path"
 
-// test/preload.ts pins OPENCODE_MODELS_PATH to a fixture so other tests can
+// test/preload.ts pins CODETUTOR_MODELS_PATH to a fixture so other tests can
 // resolve providers without network. These tests need to drive the on-disk
 // cache themselves and silence the eager refresh fork. Save/restore around
 // the suite — never leak the mutation to subsequent test files in the same
 // bun process.
-const ORIGINAL_MODELS_PATH = Flag.OPENCODE_MODELS_PATH
-const ORIGINAL_DISABLE_FETCH = Flag.OPENCODE_DISABLE_MODELS_FETCH
+const ORIGINAL_MODELS_PATH = Flag.CODETUTOR_MODELS_PATH
+const ORIGINAL_DISABLE_FETCH = Flag.CODETUTOR_DISABLE_MODELS_FETCH
+const ORIGINAL_MODELS_URL = Flag.CODETUTOR_MODELS_URL
 beforeAll(() => {
-  Flag.OPENCODE_MODELS_PATH = undefined
-  Flag.OPENCODE_DISABLE_MODELS_FETCH = true
+  Flag.CODETUTOR_MODELS_PATH = undefined
+  Flag.CODETUTOR_DISABLE_MODELS_FETCH = true
+  Flag.CODETUTOR_MODELS_URL = undefined
 })
 afterAll(() => {
-  Flag.OPENCODE_MODELS_PATH = ORIGINAL_MODELS_PATH
-  Flag.OPENCODE_DISABLE_MODELS_FETCH = ORIGINAL_DISABLE_FETCH
+  Flag.CODETUTOR_MODELS_PATH = ORIGINAL_MODELS_PATH
+  Flag.CODETUTOR_DISABLE_MODELS_FETCH = ORIGINAL_DISABLE_FETCH
+  Flag.CODETUTOR_MODELS_URL = ORIGINAL_MODELS_URL
 })
 
 const cacheFile = path.join(Global.Path.cache, "models.json")
+const customSource = "https://catalog.example.test"
+const customCacheFile = path.join(Global.Path.cache, `models-${Hash.fast(customSource)}.json`)
 
 const fixture: Record<string, ModelsDev.Provider> = {
   acme: {
@@ -113,11 +119,14 @@ const provided = <A, E>(state: Ref.Ref<MockState>, eff: Effect.Effect<A, E, Mode
   eff.pipe(Effect.provide(buildLayer(state)))
 
 beforeEach(async () => {
+  Flag.CODETUTOR_MODELS_URL = undefined
   await rm(cacheFile, { force: true })
+  await rm(customCacheFile, { force: true })
 })
 
 afterAll(async () => {
   await rm(cacheFile, { force: true })
+  await rm(customCacheFile, { force: true })
 })
 
 const initialState: MockState = {
@@ -161,18 +170,42 @@ describe("ModelsDev Service", () => {
       const context = yield* Layer.build(buildLayer(state))
       const result = yield* Effect.acquireUseRelease(
         Effect.sync(() => {
-          Flag.OPENCODE_DISABLE_MODELS_FETCH = false
+          Flag.CODETUTOR_DISABLE_MODELS_FETCH = false
         }),
         () => ModelsDev.Service.use((s) => s.get()).pipe(Effect.provide(context)),
         () =>
           Effect.sync(() => {
-            Flag.OPENCODE_DISABLE_MODELS_FETCH = true
+            Flag.CODETUTOR_DISABLE_MODELS_FETCH = true
           }),
       )
       expect(result).toEqual(fixture2)
       expect(yield* Effect.promise(() => readFile(cacheFile, "utf8"))).toBe(JSON.stringify(fixture2))
       const final = yield* Ref.get(state)
       expect(final.calls.length).toBe(1)
+      expect(final.calls[0].url).toBe("https://models.dev/api.json")
+    }),
+  )
+
+  it.live("get() honors the CodeTutor model catalog URL override", () =>
+    Effect.gen(function* () {
+      const state = yield* Ref.make({ ...initialState, body: JSON.stringify(fixture2) })
+      const result = yield* Effect.acquireUseRelease(
+        Effect.sync(() => {
+          Flag.CODETUTOR_MODELS_URL = customSource
+          Flag.CODETUTOR_DISABLE_MODELS_FETCH = false
+        }),
+        () => ModelsDev.Service.use((s) => s.get()).pipe(Effect.provide(buildLayer(state))),
+        () =>
+          Effect.sync(() => {
+            Flag.CODETUTOR_MODELS_URL = undefined
+            Flag.CODETUTOR_DISABLE_MODELS_FETCH = true
+          }),
+      )
+      expect(result).toEqual(fixture2)
+      expect(yield* Effect.promise(() => readFile(customCacheFile, "utf8"))).toBe(JSON.stringify(fixture2))
+      const final = yield* Ref.get(state)
+      expect(final.calls).toHaveLength(1)
+      expect(final.calls[0].url).toBe(`${customSource}/api.json`)
     }),
   )
 

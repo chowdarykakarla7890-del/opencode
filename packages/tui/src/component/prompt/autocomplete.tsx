@@ -23,6 +23,7 @@ import { useFrecency } from "../../prompt/frecency"
 import { useBindings, useCommandSlashes, useOpencodeModeStack } from "../../keymap"
 import { displayCharAt, mentionTriggerIndex } from "../../prompt/display"
 import type { FileSystemEntry } from "@opencode-ai/sdk/v2"
+import { studioBorder, useStudioPresentation } from "../../ui/studio"
 
 function removeLineRange(input: string) {
   const hashIndex = input.lastIndexOf("#")
@@ -92,6 +93,7 @@ export function Autocomplete(props: {
   const slashes = useCommandSlashes()
   const modeStack = useOpencodeModeStack()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const dimensions = useTerminalDimensions()
   const frecency = useFrecency()
   const tuiConfig = useTuiConfig()
@@ -727,7 +729,9 @@ export function Autocomplete(props: {
       left={position().x}
       width={position().width}
       zIndex={100}
-      {...SplitBorder}
+      {...(studio.enabled()
+        ? { border: ["top", "bottom", "left", "right"] as const, customBorderChars: studioBorder }
+        : SplitBorder)}
       borderColor={theme.border}
     >
       <scrollbox
@@ -749,7 +753,9 @@ export function Autocomplete(props: {
             <box
               paddingLeft={1}
               paddingRight={1}
-              backgroundColor={index === store.selected ? theme.primary : undefined}
+              backgroundColor={
+                index === store.selected ? (studio.enabled() ? theme.backgroundElement : theme.primary) : undefined
+              }
               flexDirection="row"
               onMouseMove={() => {
                 setStore("input", "mouse")
@@ -764,11 +770,23 @@ export function Autocomplete(props: {
               }}
               onMouseUp={() => select()}
             >
-              <text fg={index === store.selected ? selectedForeground(theme) : theme.text} flexShrink={0}>
+              <text
+                fg={index === store.selected && !studio.enabled() ? selectedForeground(theme) : theme.text}
+                flexShrink={0}
+              >
                 {option().display}
               </text>
               <Show when={option().description}>
-                <text fg={index === store.selected ? selectedForeground(theme) : theme.textMuted} wrapMode="none">
+                <text
+                  fg={
+                    index === store.selected
+                      ? studio.enabled()
+                        ? theme.primary
+                        : selectedForeground(theme)
+                      : theme.textMuted
+                  }
+                  wrapMode="none"
+                >
                   {" " + option().description?.trimStart()}
                 </text>
               </Show>

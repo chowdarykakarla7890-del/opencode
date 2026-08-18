@@ -82,6 +82,9 @@ export function LegacyHome() {
         />
         {server.name}
       </Button>
+      <Button class="mt-3 mx-auto px-4" onClick={() => navigate("/learning")}>
+        {language.t("learning.open")}
+      </Button>
       <Switch>
         <Match when={sync().data.project.length > 0}>
           <div class="mt-20 w-full flex flex-col gap-4">

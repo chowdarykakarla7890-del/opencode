@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=CodeTutor
+Exec=/opt/CodeTutor/com.codetutor.desktop %U
+Terminal=false
+Type=Application
+Icon=com.codetutor.desktop
+StartupWMClass=com.codetutor.desktop
+NoDisplay=true
+Comment=AI coding tutor with guided lessons
+Categories=Development;Education;

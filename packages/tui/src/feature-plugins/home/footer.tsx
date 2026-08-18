@@ -4,6 +4,7 @@ import { createMemo, Match, Show, Switch } from "solid-js"
 import { abbreviateHome } from "../../runtime"
 import { useTuiPaths } from "../../context/runtime"
 import { useHomeSessionDestination } from "../../routes/home/session-destination"
+import { useStudioPresentation } from "../../ui/studio"
 
 const id = "internal:home-footer"
 
@@ -62,6 +63,8 @@ function Version(props: { api: TuiPluginApi }) {
 }
 
 function View(props: { api: TuiPluginApi }) {
+  const studio = useStudioPresentation()
+  const theme = () => props.api.theme.current
   return (
     <box
       width="100%"
@@ -72,6 +75,9 @@ function View(props: { api: TuiPluginApi }) {
       flexDirection="row"
       flexShrink={0}
       gap={2}
+      border={studio.enabled() ? ["top"] : undefined}
+      borderColor={studio.enabled() ? theme().borderSubtle : undefined}
+      backgroundColor={studio.enabled() ? theme().backgroundPanel : undefined}
     >
       <Directory api={props.api} />
       <Mcp api={props.api} />

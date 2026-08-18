@@ -13,14 +13,14 @@ import { testEffect } from "../lib/effect"
 const stateLayer = Layer.effectDiscard(
   Effect.gen(function* () {
     const original = {
-      OPENCODE_EXPERIMENTAL_WORKSPACES: Flag.OPENCODE_EXPERIMENTAL_WORKSPACES,
+      CODETUTOR_EXPERIMENTAL_WORKSPACES: Flag.CODETUTOR_EXPERIMENTAL_WORKSPACES,
     }
 
-    Flag.OPENCODE_EXPERIMENTAL_WORKSPACES = true
+    Flag.CODETUTOR_EXPERIMENTAL_WORKSPACES = true
 
     yield* Effect.addFinalizer(() =>
       Effect.promise(async () => {
-        Flag.OPENCODE_EXPERIMENTAL_WORKSPACES = original.OPENCODE_EXPERIMENTAL_WORKSPACES
+        Flag.CODETUTOR_EXPERIMENTAL_WORKSPACES = original.CODETUTOR_EXPERIMENTAL_WORKSPACES
         await resetDatabase()
       }),
     )

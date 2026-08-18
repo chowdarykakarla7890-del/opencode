@@ -36,7 +36,7 @@ type PluralKey =
 type Source = { dict: Record<string, string> }
 
 function cookie(locale: Locale) {
-  return `oc_locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`
+  return `codetutor_locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`
 }
 
 const LOCALES: readonly Locale[] = DESKTOP_NATIVE_LOCALES
@@ -140,7 +140,7 @@ export function normalizeLocale(value: string): Locale {
 function readStoredLocale() {
   if (typeof localStorage !== "object") return
   try {
-    const raw = localStorage.getItem("opencode.global.dat:language")
+    const raw = localStorage.getItem("codetutor.global.dat:language")
     if (!raw) return
     const next = JSON.parse(raw) as { locale?: string }
     if (typeof next?.locale !== "string") return

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
+  "provider": {},
+  "permission": {},
+  "references": {
+    "codetutor-local": {
+      "path": "~/.local/share/codetutor",
+      "description": "Contains CodeTutor logs, lesson progress, and local data"
+    }
+  },
+  "mcp": {},
+  "tools": {
+    "github-triage": false,
+    "github-pr-search": false
+  }
+}

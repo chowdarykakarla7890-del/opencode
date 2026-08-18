@@ -1,5 +1,5 @@
 import { Prompt, type PromptRef } from "../component/prompt"
-import { createEffect, createMemo, createSignal, onMount } from "solid-js"
+import { createEffect, createMemo, createSignal, onMount, Show } from "solid-js"
 import { Logo } from "../component/logo"
 import { useSync } from "../context/sync"
 import { Toast } from "../ui/toast"
@@ -12,6 +12,7 @@ import { useEditorContext } from "../context/editor"
 import { useTerminalDimensions } from "@opentui/solid"
 import { useTuiConfig } from "../config"
 import { HomeSessionDestinationProvider } from "./home/session-destination"
+import { StudioSectionLabel, StudioStatusChip, useStudioPresentation } from "../ui/studio"
 
 let once = false
 const placeholder = {
@@ -30,6 +31,7 @@ export function Home() {
   const editor = useEditorContext()
   const dimensions = useTerminalDimensions()
   const tuiConfig = useTuiConfig()
+  const studio = useStudioPresentation()
   const promptMaxWidth = createMemo(() => {
     const configured = tuiConfig.prompt?.max_width
     if (configured === "auto") return Math.max(75, Math.floor(dimensions().width * 0.7))
@@ -73,6 +75,11 @@ export function Home() {
         <box flexGrow={1} minHeight={0} />
         <box height={4} minHeight={0} flexShrink={1} />
         <box flexShrink={0}>
+          <Show when={studio.enabled()}>
+            <box paddingBottom={1}>
+              <StudioSectionLabel label="CodeTutor // learn by building" right={<StudioStatusChip label="local" />} />
+            </box>
+          </Show>
           <pluginRuntime.Slot name="home_logo" mode="replace">
             <Logo />
           </pluginRuntime.Slot>

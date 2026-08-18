@@ -19,3 +19,5 @@ export async function createOpencode(options?: ServerOptions) {
     server,
   }
 }
+
+export const createCodeTutor = createOpencode

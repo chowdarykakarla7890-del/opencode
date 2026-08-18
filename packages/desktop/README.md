@@ -1,6 +1,6 @@
-# OpenCode Desktop
+# CodeTutor Desktop
 
-The OpenCode Desktop app, built with Electron.
+The CodeTutor Desktop app, built with Electron.
 
 ## Development
 

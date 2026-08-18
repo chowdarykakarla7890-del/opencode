@@ -1,0 +1,13 @@
+.git
+.github
+.codetutor
+**/.env*
+**/.vercel
+**/node_modules
+**/dist
+**/out
+**/.astro
+**/e2e/test-results
+**/e2e/playwright-report
+packages/desktop/resources/codetutor-cli
+packages/opencode/*.tgz

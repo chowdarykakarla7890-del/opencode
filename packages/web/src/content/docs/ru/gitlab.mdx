@@ -35,7 +35,7 @@ opencode работает в обычном конвейере GitLab. Вы мо
      - component: $CI_SERVER_FQDN/nagyv/gitlab-opencode/opencode@2
        inputs:
          config_dir: ${CI_PROJECT_DIR}/opencode-config
-         auth_json: $OPENCODE_AUTH_JSON # The variable name for your OpenCode authentication JSON
+         auth_json: $CODETUTOR_AUTH_JSON # The variable name for your CodeTutor authentication JSON
          command: optional-custom-command
          message: "Your prompt here"
    ```
@@ -91,7 +91,7 @@ opencode работает в вашем конвейере GitLab CI/CD. Вот 
       - apt-get install --yes glab
       - echo "Configuring glab"
       - echo $GITLAB_HOST
-      - echo "Creating OpenCode auth configuration"
+      - echo "Creating CodeTutor auth configuration"
       - mkdir --parents ~/.local/share/opencode
       - |
         cat > ~/.local/share/opencode/auth.json << EOF
@@ -104,12 +104,12 @@ opencode работает в вашем конвейере GitLab CI/CD. Вот 
         EOF
       - echo "Configuring git"
       - git config --global user.email "opencode@gitlab.com"
-      - git config --global user.name "OpenCode"
+      - git config --global user.name "CodeTutor"
       - echo "Testing glab"
       - glab issue list
-      - echo "Running OpenCode"
+      - echo "Running CodeTutor"
       - |
-        opencode run "
+        codetutor run "
         You are an AI assistant helping with GitLab operations.
 
         Context: $AI_FLOW_CONTEXT
@@ -169,7 +169,7 @@ opencode работает в вашем конвейере GitLab CI/CD. Вот 
   Добавьте этот комментарий в issue GitLab.
 
   ```
-  @opencode explain this issue
+  @codetutor explain this issue
   ```
 
   opencode прочитает проблему и ответит с четким объяснением.
@@ -179,7 +179,7 @@ opencode работает в вашем конвейере GitLab CI/CD. Вот 
   В issue GitLab напишите:
 
   ```
-  @opencode fix this
+  @codetutor fix this
   ```
 
   opencode создаст новую ветку, внедрит изменения и откроет мерж-реквест с изменениями.
@@ -189,7 +189,7 @@ opencode работает в вашем конвейере GitLab CI/CD. Вот 
   Оставьте следующий комментарий к мерж-реквесту GitLab.
 
   ```
-  @opencode review this merge request
+  @codetutor review this merge request
   ```
 
   opencode рассмотрит мерж-реквест и предоставит отзыв.

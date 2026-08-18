@@ -1,7 +1,7 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode acp --help 1`] = `
-"opencode acp
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor acp --help 1`] = `
+"codetutor acp
 
 start ACP (Agent Client Protocol) server
 
@@ -15,23 +15,23 @@ Options:
       --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
       --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
                                                                           [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
+      --mdns-domain  custom domain name for mDNS service (default: codetutor.local)
+                                                               [string] [default: "codetutor.local"]
       --cors         additional domains to allow for CORS                      [array] [default: []]
       --cwd          working directory [string] [default: "<HOME>"]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp --help 1`] = `
-"opencode mcp
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor mcp --help 1`] = `
+"codetutor mcp
 
 manage MCP (Model Context Protocol) servers
 
 Commands:
-  opencode mcp add [name]     add an MCP server
-  opencode mcp list           list MCP servers and their status                        [aliases: ls]
-  opencode mcp auth [name]    authenticate with an OAuth-enabled MCP server
-  opencode mcp logout [name]  remove OAuth credentials for an MCP server
-  opencode mcp debug <name>   debug OAuth connection for an MCP server
+  codetutor mcp add [name]     add an MCP server
+  codetutor mcp list           list MCP servers and their status                       [aliases: ls]
+  codetutor mcp auth [name]    authenticate with an OAuth-enabled MCP server
+  codetutor mcp logout [name]  remove OAuth credentials for an MCP server
+  codetutor mcp debug <name>   debug OAuth connection for an MCP server
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -41,10 +41,10 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode attach --help 1`] = `
-"opencode attach <url>
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor attach --help 1`] = `
+"codetutor attach <url>
 
-attach to a running opencode server
+attach to a running CodeTutor server
 
 Positionals:
   url  http://localhost:4096                                                     [string] [required]
@@ -59,18 +59,18 @@ Options:
   -c, --continue      continue the last session                                            [boolean]
   -s, --session       session id to continue                                                [string]
       --fork          fork the session when continuing (use with --continue or --session)  [boolean]
-  -p, --password      basic auth password (defaults to OPENCODE_SERVER_PASSWORD)            [string]
-  -u, --username      basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')
+  -p, --password      basic auth password (defaults to CODETUTOR_SERVER_PASSWORD)           [string]
+  -u, --username      basic auth username (defaults to CODETUTOR_SERVER_USERNAME or 'codetutor')
                                                                                             [string]
       --mini          start the minimal interactive interface             [boolean] [default: false]
       --no-replay     disable mini session history replay on resume and after resize       [boolean]
       --replay-limit  cap visible mini replay to the newest N messages                      [number]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode run --help 1`] = `
-"opencode run [message..]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor run --help 1`] = `
+"codetutor run [message..]
 
-run opencode with a message
+ask CodeTutor to help with a message
 
 Positionals:
   message  message to send                                                     [array] [default: []]
@@ -85,16 +85,15 @@ Options:
   -c, --continue     continue the last session                                             [boolean]
   -s, --session      session id to continue                                                 [string]
       --fork         fork the session before continuing (requires --continue or --session) [boolean]
-      --share        share the session                                                     [boolean]
   -m, --model        model to use in the format of provider/model                           [string]
       --agent        agent to use                                                           [string]
       --format       format: default (formatted) or json (raw JSON events)
                                           [string] [choices: "default", "json"] [default: "default"]
   -f, --file         file(s) to attach to message                                            [array]
       --title        title for the session (uses truncated prompt if no value provided)     [string]
-      --attach       attach to a running opencode server (e.g., http://localhost:4096)      [string]
-  -p, --password     basic auth password (defaults to OPENCODE_SERVER_PASSWORD)             [string]
-  -u, --username     basic auth username (defaults to OPENCODE_SERVER_USERNAME or 'opencode')
+      --attach       attach to a running CodeTutor server (e.g., http://localhost:4096)     [string]
+  -p, --password     basic auth password (defaults to CODETUTOR_SERVER_PASSWORD)            [string]
+  -u, --username     basic auth username (defaults to CODETUTOR_SERVER_USERNAME or 'codetutor')
                                                                                             [string]
       --dir          directory to run in, path on remote server if attaching                [string]
       --port         port for the local server (defaults to random port if no value provided)
@@ -107,25 +106,25 @@ Options:
                                                                           [boolean] [default: false]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode debug --help 1`] = `
-"opencode debug
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor debug --help 1`] = `
+"codetutor debug
 
 debugging and troubleshooting tools
 
 Commands:
-  opencode debug config        show resolved configuration
-  opencode debug lsp           LSP debugging utilities
-  opencode debug rg            ripgrep debugging utilities
-  opencode debug file          file system debugging utilities
-  opencode debug scrap         list all known projects
-  opencode debug skill         list all available skills
-  opencode debug snapshot      snapshot debugging utilities
-  opencode debug startup       print startup timing
-  opencode debug agent <name>  show agent configuration details
-  opencode debug v2            debug v2 catalog and built-in plugins
-  opencode debug info          show debug information
-  opencode debug paths         show global paths (data, config, cache, state)
-  opencode debug wait          wait indefinitely (for debugging)
+  codetutor debug config        show resolved configuration
+  codetutor debug lsp           LSP debugging utilities
+  codetutor debug rg            ripgrep debugging utilities
+  codetutor debug file          file system debugging utilities
+  codetutor debug scrap         list all known projects
+  codetutor debug skill         list all available skills
+  codetutor debug snapshot      snapshot debugging utilities
+  codetutor debug startup       print startup timing
+  codetutor debug agent <name>  show agent configuration details
+  codetutor debug v2            debug v2 catalog and built-in plugins
+  codetutor debug info          show debug information
+  codetutor debug paths         show global paths (data, config, cache, state)
+  codetutor debug wait          wait indefinitely (for debugging)
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -135,15 +134,15 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers --help 1`] = `
-"opencode providers
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor providers --help 1`] = `
+"codetutor providers
 
 manage AI providers and credentials
 
 Commands:
-  opencode providers list               list providers and credentials                 [aliases: ls]
-  opencode providers login [url]        log in to a provider
-  opencode providers logout [provider]  log out from a configured provider
+  codetutor providers list               list providers and credentials                [aliases: ls]
+  codetutor providers login [url]        log in to a provider
+  codetutor providers logout [provider]  log out from a configured provider
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -153,14 +152,14 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent --help 1`] = `
-"opencode agent
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor agent --help 1`] = `
+"codetutor agent
 
 manage agents
 
 Commands:
-  opencode agent create  create a new agent
-  opencode agent list    list all available agents
+  codetutor agent create  create a new agent
+  codetutor agent list    list all available agents
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -170,10 +169,10 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode upgrade --help 1`] = `
-"opencode upgrade [target]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor upgrade --help 1`] = `
+"codetutor upgrade [target]
 
-upgrade opencode to the latest or a specific version
+upgrade CodeTutor to the latest or a specific version
 
 Positionals:
   target  version to upgrade to, for ex '0.1.48' or 'v0.1.48'                               [string]
@@ -188,10 +187,10 @@ Options:
                           [string] [choices: "curl", "npm", "pnpm", "bun", "brew", "choco", "scoop"]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode uninstall --help 1`] = `
-"opencode uninstall
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor uninstall --help 1`] = `
+"codetutor uninstall
 
-uninstall opencode and remove all related files
+uninstall CodeTutor and remove all related files
 
 Options:
   -h, --help         show help                                                             [boolean]
@@ -205,30 +204,10 @@ Options:
   -f, --force        skip confirmation prompts                            [boolean] [default: false]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode serve --help 1`] = `
-"opencode serve
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor serve --help 1`] = `
+"codetutor serve
 
-starts a headless opencode server
-
-Options:
-  -h, --help         show help                                                             [boolean]
-  -v, --version      show version number                                                   [boolean]
-      --print-logs   print logs to stderr                                                  [boolean]
-      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure         run without external plugins                                          [boolean]
-      --port         port to listen on                                         [number] [default: 0]
-      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
-      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
-                                                                          [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
-      --cors         additional domains to allow for CORS                      [array] [default: []]"
-`;
-
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode web --help 1`] = `
-"opencode web
-
-start opencode server and open web interface
+starts a headless CodeTutor server
 
 Options:
   -h, --help         show help                                                             [boolean]
@@ -240,13 +219,33 @@ Options:
       --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
       --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
                                                                           [boolean] [default: false]
-      --mdns-domain  custom domain name for mDNS service (default: opencode.local)
-                                                                [string] [default: "opencode.local"]
+      --mdns-domain  custom domain name for mDNS service (default: codetutor.local)
+                                                               [string] [default: "codetutor.local"]
       --cors         additional domains to allow for CORS                      [array] [default: []]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode models --help 1`] = `
-"opencode models [provider]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor web --help 1`] = `
+"codetutor web
+
+start CodeTutor server and open web interface
+
+Options:
+  -h, --help         show help                                                             [boolean]
+  -v, --version      show version number                                                   [boolean]
+      --print-logs   print logs to stderr                                                  [boolean]
+      --log-level    log level                  [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure         run without external plugins                                          [boolean]
+      --port         port to listen on                                         [number] [default: 0]
+      --hostname     hostname to listen on                           [string] [default: "127.0.0.1"]
+      --mdns         enable mDNS service discovery (defaults hostname to 0.0.0.0)
+                                                                          [boolean] [default: false]
+      --mdns-domain  custom domain name for mDNS service (default: codetutor.local)
+                                                               [string] [default: "codetutor.local"]
+      --cors         additional domains to allow for CORS                      [array] [default: []]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor models --help 1`] = `
+"codetutor models [provider]
 
 list all available models
 
@@ -263,8 +262,8 @@ Options:
       --refresh     refresh the models cache from models.dev                               [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode stats --help 1`] = `
-"opencode stats
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor stats --help 1`] = `
+"codetutor stats
 
 show token usage and cost statistics
 
@@ -281,8 +280,8 @@ Options:
       --project     filter by project (default: all projects, empty string: current project)[string]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode export --help 1`] = `
-"opencode export [sessionID]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor export --help 1`] = `
+"codetutor export [sessionID]
 
 export session data as JSON
 
@@ -298,8 +297,8 @@ Options:
       --sanitize    redact sensitive transcript and file data                              [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode import --help 1`] = `
-"opencode import <file>
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor import --help 1`] = `
+"codetutor import <file>
 
 import session data from JSON file or URL
 
@@ -314,27 +313,10 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github --help 1`] = `
-"opencode github
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor pr --help 1`] = `
+"codetutor pr <number>
 
-manage GitHub agent
-
-Commands:
-  opencode github install  install the GitHub agent
-  opencode github run      run the GitHub agent
-
-Options:
-  -h, --help        show help                                                              [boolean]
-  -v, --version     show version number                                                    [boolean]
-      --print-logs  print logs to stderr                                                   [boolean]
-      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
-      --pure        run without external plugins                                           [boolean]"
-`;
-
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode pr --help 1`] = `
-"opencode pr <number>
-
-fetch and checkout a GitHub PR branch, then run opencode
+fetch and checkout a GitHub PR branch, then run CodeTutor
 
 Positionals:
   number  PR number to checkout                                                  [number] [required]
@@ -347,14 +329,14 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session --help 1`] = `
-"opencode session
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor session --help 1`] = `
+"codetutor session
 
 manage sessions
 
 Commands:
-  opencode session list                list sessions
-  opencode session delete <sessionID>  delete a session
+  codetutor session list                list sessions
+  codetutor session delete <sessionID>  delete a session
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -364,8 +346,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode plugin --help 1`] = `
-"opencode plugin <module>
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor plugin --help 1`] = `
+"codetutor plugin <module>
 
 install plugin and update config
 
@@ -382,14 +364,14 @@ Options:
   -f, --force       replace existing plugin version                       [boolean] [default: false]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode db --help 1`] = `
-"opencode db
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor db --help 1`] = `
+"codetutor db
 
 database tools
 
 Commands:
-  opencode db [query]     open an interactive sqlite3 shell or run a query                 [default]
-  opencode db path        print the database path
+  codetutor db [query]     open an interactive sqlite3 shell or run a query                [default]
+  codetutor db path        print the database path
 
 Positionals:
   query  SQL query to execute                                                               [string]
@@ -403,8 +385,32 @@ Options:
       --format      Output format                 [string] [choices: "json", "tsv"] [default: "tsv"]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp list --help 1`] = `
-"opencode mcp list
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn --help 1`] = `
+"codetutor learn
+
+learn JavaScript and TypeScript with guided lessons
+
+Commands:
+  codetutor learn list                  list built-in lessons
+  codetutor learn start <lesson-id>     start or resume a lesson
+  codetutor learn resume                show the most recently active lesson
+  codetutor learn status                show curriculum progress
+  codetutor learn check [lesson-id]     run deterministic checks for a lesson
+  codetutor learn hint [lesson-id]      show the next layered hint
+  codetutor learn solution [lesson-id]  reveal the solution without overwriting your work
+  codetutor learn reset <lesson-id>     restore a lesson's starter files
+  codetutor learn level [level]         show or change your teaching level
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor mcp list --help 1`] = `
+"codetutor mcp list
 
 list MCP servers and their status
 
@@ -416,8 +422,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp add --help 1`] = `
-"opencode mcp add [name]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor mcp add --help 1`] = `
+"codetutor mcp add [name]
 
 add an MCP server
 
@@ -435,13 +441,13 @@ Options:
       --header      HTTP header for a remote MCP server (KEY=VALUE)                          [array]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp auth --help 1`] = `
-"opencode mcp auth [name]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor mcp auth --help 1`] = `
+"codetutor mcp auth [name]
 
 authenticate with an OAuth-enabled MCP server
 
 Commands:
-  opencode mcp auth list  list OAuth-capable MCP servers and their auth status         [aliases: ls]
+  codetutor mcp auth list  list OAuth-capable MCP servers and their auth status        [aliases: ls]
 
 Positionals:
   name  name of the MCP server                                                              [string]
@@ -454,8 +460,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode mcp logout --help 1`] = `
-"opencode mcp logout [name]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor mcp logout --help 1`] = `
+"codetutor mcp logout [name]
 
 remove OAuth credentials for an MCP server
 
@@ -470,8 +476,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers list --help 1`] = `
-"opencode providers list
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor providers list --help 1`] = `
+"codetutor providers list
 
 list providers and credentials
 
@@ -483,13 +489,13 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers login --help 1`] = `
-"opencode providers login [url]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor providers login --help 1`] = `
+"codetutor providers login [url]
 
 log in to a provider
 
 Positionals:
-  url  opencode auth provider                                                               [string]
+  url  codetutor auth provider                                                              [string]
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -501,8 +507,8 @@ Options:
   -m, --method      login method label (skips method selection)                             [string]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode providers logout --help 1`] = `
-"opencode providers logout [provider]
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor providers logout --help 1`] = `
+"codetutor providers logout [provider]
 
 log out from a configured provider
 
@@ -517,8 +523,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent create --help 1`] = `
-"opencode agent create
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor agent create --help 1`] = `
+"codetutor agent create
 
 create a new agent
 
@@ -537,8 +543,8 @@ Options:
   -m, --model                 model to use in the format of provider/model                  [string]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode agent list --help 1`] = `
-"opencode agent list
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor agent list --help 1`] = `
+"codetutor agent list
 
 list all available agents
 
@@ -550,8 +556,8 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session list --help 1`] = `
-"opencode session list
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor session list --help 1`] = `
+"codetutor session list
 
 list sessions
 
@@ -565,8 +571,8 @@ Options:
       --format      output format             [string] [choices: "table", "json"] [default: "table"]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode session delete --help 1`] = `
-"opencode session delete <sessionID>
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor session delete --help 1`] = `
+"codetutor session delete <sessionID>
 
 delete a session
 
@@ -581,10 +587,10 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github install --help 1`] = `
-"opencode github install
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor db path --help 1`] = `
+"codetutor db path
 
-install the GitHub agent
+print the database path
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -594,10 +600,10 @@ Options:
       --pure        run without external plugins                                           [boolean]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode github run --help 1`] = `
-"opencode github run
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn list --help 1`] = `
+"codetutor learn list
 
-run the GitHub agent
+list built-in lessons
 
 Options:
   -h, --help        show help                                                              [boolean]
@@ -605,14 +611,127 @@ Options:
       --print-logs  print logs to stderr                                                   [boolean]
       --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
       --pure        run without external plugins                                           [boolean]
-      --event       GitHub mock event to run the agent for                                  [string]
-      --token       GitHub personal access token (github_pat_********)                      [string]"
+      --level       filter by learner level
+                                          [string] [choices: "beginner", "intermediate", "advanced"]"
 `;
 
-exports[`opencode CLI help-text snapshots every documented command emits stable help text: opencode db path --help 1`] = `
-"opencode db path
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn start --help 1`] = `
+"codetutor learn start <lesson-id>
 
-print the database path
+start or resume a lesson
+
+Positionals:
+  lesson-id                                                                      [string] [required]
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]
+      --reset       replace the lesson workspace with starter files       [boolean] [default: false]
+      --force       confirm a destructive lesson reset                    [boolean] [default: false]
+      --tui         open the tutor after scaffolding                       [boolean] [default: true]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn resume --help 1`] = `
+"codetutor learn resume
+
+show the most recently active lesson
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn status --help 1`] = `
+"codetutor learn status
+
+show curriculum progress
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn check --help 1`] = `
+"codetutor learn check [lesson-id]
+
+run deterministic checks for a lesson
+
+Positionals:
+  lesson-id                                                                                 [string]
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn hint --help 1`] = `
+"codetutor learn hint [lesson-id]
+
+show the next layered hint
+
+Positionals:
+  lesson-id                                                                                 [string]
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn solution --help 1`] = `
+"codetutor learn solution [lesson-id]
+
+reveal the solution without overwriting your work
+
+Positionals:
+  lesson-id                                                                                 [string]
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn reset --help 1`] = `
+"codetutor learn reset <lesson-id>
+
+restore a lesson's starter files
+
+Positionals:
+  lesson-id                                                                      [string] [required]
+
+Options:
+  -h, --help        show help                                                              [boolean]
+  -v, --version     show version number                                                    [boolean]
+      --print-logs  print logs to stderr                                                   [boolean]
+      --log-level   log level                   [string] [choices: "DEBUG", "INFO", "WARN", "ERROR"]
+      --pure        run without external plugins                                           [boolean]
+      --force       confirm destructive workspace reset                   [boolean] [default: false]"
+`;
+
+exports[`CodeTutor CLI help-text snapshots every documented command emits stable help text: codetutor learn level --help 1`] = `
+"codetutor learn level [level]
+
+show or change your teaching level
+
+Positionals:
+  level                                   [string] [choices: "beginner", "intermediate", "advanced"]
 
 Options:
   -h, --help        show help                                                              [boolean]

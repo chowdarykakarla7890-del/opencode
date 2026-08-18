@@ -46,6 +46,11 @@ export function hints(template: string) {
 export const Default = {
   INIT: "init",
   REVIEW: "review",
+  LESSON: "lesson",
+  HINT: "hint",
+  CHECK: "check",
+  PROGRESS: "progress",
+  SOLUTION: "solution",
 } as const
 
 export interface Interface {
@@ -85,6 +90,49 @@ const layer = Layer.effect(
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
+      }
+      commands[Default.LESSON] = {
+        name: Default.LESSON,
+        description: "start or resume a CodeTutor lesson: /lesson <lesson-id>",
+        agent: "tutor",
+        source: "command",
+        template:
+          "Start or resume CodeTutor lesson $ARGUMENTS with `codetutor learn start $ARGUMENTS --no-tui`, inspect its README and starter code, then begin teaching without revealing the solution.",
+        hints: ["$ARGUMENTS"],
+      }
+      commands[Default.HINT] = {
+        name: Default.HINT,
+        description: "show the next layered hint for the active lesson",
+        agent: "tutor",
+        source: "command",
+        template: "Run `codetutor learn hint` and explain only that hint in the context of the learner's current code.",
+        hints: [],
+      }
+      commands[Default.CHECK] = {
+        name: Default.CHECK,
+        description: "run the active lesson's deterministic validator",
+        agent: "tutor",
+        source: "command",
+        template:
+          "Run `codetutor learn check`. Report the deterministic result exactly and help diagnose failures; never mark the lesson complete when the validator fails.",
+        hints: [],
+      }
+      commands[Default.PROGRESS] = {
+        name: Default.PROGRESS,
+        description: "show local CodeTutor curriculum progress",
+        agent: "tutor",
+        source: "command",
+        template: "Run `codetutor learn status` and summarize the learner's local progress and a sensible next lesson.",
+        hints: [],
+      }
+      commands[Default.SOLUTION] = {
+        name: Default.SOLUTION,
+        description: "explicitly reveal the active lesson solution as a diff",
+        agent: "tutor",
+        source: "command",
+        template:
+          "The learner explicitly requested the solution. Run `codetutor learn solution`, compare it with the learner's current code as a diff, and do not overwrite their files.",
+        hints: [],
       }
 
       for (const [name, command] of Object.entries(cfg.command ?? {})) {

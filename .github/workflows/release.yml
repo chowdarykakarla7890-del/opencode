@@ -1,0 +1,179 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  CODETUTOR_VERSION: ${{ github.ref_name }}
+  CODETUTOR_CHANNEL: ${{ contains(github.ref_name, '-') && 'beta' || 'latest' }}
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: bun install --frozen-lockfile
+      - run: bun run branding:audit
+      - run: bun test
+        working-directory: packages/curriculum
+      - run: bun run typecheck
+        working-directory: packages/opencode
+      - run: bun run typecheck
+        working-directory: packages/app
+      - run: bun run typecheck
+        working-directory: packages/desktop
+      - run: bun run typecheck
+        working-directory: packages/sdk/js
+      - run: bun run typecheck
+        working-directory: packages/plugin
+      - run: bun test test/cli/learning.test.ts test/cli/help/help-snapshots.test.ts test/installation/index.test.ts
+        working-directory: packages/opencode
+      - run: bun test
+        working-directory: packages/desktop
+      - run: node --experimental-strip-types --test src/main/draft-store.test.ts
+        working-directory: packages/desktop
+      - run: bun run test:unit
+        working-directory: packages/app
+
+  web-app:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+        working-directory: packages/app
+      - run: bun run build
+        working-directory: packages/web
+      - run: bunx playwright install --with-deps chromium
+        working-directory: packages/app
+      - run: bunx playwright test e2e/user-story/learning-flow.spec.ts --workers=1
+        working-directory: packages/app
+
+  cli:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run script/build.ts --skip-embed-web-ui
+        working-directory: packages/opencode
+      - run: |
+          for directory in packages/opencode/dist/codetutor-*; do
+            test -f "$directory/package.json"
+          done
+      - name: Pack and install-test npm tarballs
+        working-directory: packages/opencode
+        run: |
+          CODETUTOR_DRY_RUN=1 bun run script/publish.ts
+          prefix="$(mktemp -d)"
+          npm install --prefix "$prefix" --ignore-scripts ./dist/codetutor/*.tgz ./dist/codetutor-linux-x64/*.tgz
+          node "$prefix/node_modules/codetutor/postinstall.mjs"
+          "$prefix/node_modules/.bin/codetutor" --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codetutor-cli
+          path: packages/opencode/dist/
+
+  desktop:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: mac
+          - os: windows-latest
+            target: win
+          - os: ubuntu-latest
+            target: linux
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      CODETUTOR_CHANNEL: ${{ contains(github.ref_name, '-') && 'beta' || 'prod' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run script/build.ts --single --skip-install --skip-embed-web-ui
+        working-directory: packages/opencode
+      - run: bun run build
+        working-directory: packages/desktop
+      - run: bunx electron-builder --${{ matrix.target }} --config electron-builder.config.ts --publish never
+        working-directory: packages/desktop
+      - uses: actions/upload-artifact@v4
+        with:
+          name: codetutor-desktop-${{ matrix.target }}
+          path: packages/desktop/dist/*
+
+  npm:
+    needs: cli
+    runs-on: ubuntu-latest
+    environment: npm
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: bun install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: codetutor-cli
+          path: packages/opencode/dist
+      - run: bun run script/publish.ts
+        working-directory: packages/opencode
+      - run: bun run build
+        working-directory: packages/sdk/js
+      - run: bun run script/publish.ts
+        working-directory: packages/sdk/js
+      - run: bun run build
+        working-directory: packages/plugin
+      - run: bun run script/publish.ts
+        working-directory: packages/plugin
+
+  github-release:
+    needs: [cli, desktop]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          prerelease=""
+          case "${GITHUB_REF_NAME}" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "${GITHUB_REF_NAME}" artifacts/** --repo "${GITHUB_REPOSITORY}" --generate-notes $prerelease

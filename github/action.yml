@@ -1,5 +1,5 @@
-name: "opencode GitHub Action"
-description: "Run opencode in GitHub Actions workflows"
+name: "CodeTutor GitHub Action"
+description: "Run CodeTutor in GitHub Actions workflows"
 branding:
   icon: "code"
   color: "orange"
@@ -14,7 +14,7 @@ inputs:
     required: false
 
   share:
-    description: "Share the opencode session (defaults to true for public repos)"
+    description: "Legacy sharing option; sharing is disabled in CodeTutor."
     required: false
 
   prompt:
@@ -22,7 +22,7 @@ inputs:
     required: false
 
   use_github_token:
-    description: "Use GITHUB_TOKEN directly instead of OpenCode App token exchange. When true, skips OIDC and uses the GITHUB_TOKEN env var."
+    description: "Use GITHUB_TOKEN directly instead of CodeTutor App token exchange. When true, skips OIDC and uses the GITHUB_TOKEN env var."
     required: false
     default: "false"
 
@@ -35,7 +35,7 @@ inputs:
     required: false
 
   oidc_base_url:
-    description: "Base URL for OIDC token exchange API. Only required when running a custom GitHub App install. Defaults to https://api.opencode.ai"
+    description: "Base URL for OIDC token exchange API. Only required when running a custom GitHub App install. Defaults to https://api.codetutor.ai"
     required: false
 
 runs:
@@ -45,29 +45,29 @@ runs:
       id: version
       shell: bash
       run: |
-        VERSION=$(curl -sf https://api.github.com/repos/anomalyco/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
+        VERSION=$(curl -sf https://api.github.com/repos/chowdarykakarla7890-del/opencode/releases/latest | grep -o '"tag_name": *"[^"]*"' | cut -d'"' -f4)
         echo "version=${VERSION:-latest}" >> $GITHUB_OUTPUT
 
     - name: Cache opencode
       id: cache
       uses: actions/cache@v4
       with:
-        path: ~/.opencode/bin
+        path: ~/.codetutor/bin
         key: opencode-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
 
     - name: Install opencode
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
-      run: curl -fsSL https://opencode.ai/install | bash
+      run: curl -fsSL https://codetutor-docs.vercel.app/install | bash
 
     - name: Add opencode to PATH
       shell: bash
-      run: echo "$HOME/.opencode/bin" >> $GITHUB_PATH
+      run: echo "$HOME/.codetutor/bin" >> $GITHUB_PATH
 
     - name: Run opencode
       shell: bash
       id: run_opencode
-      run: opencode github run
+      run: codetutor github run
       env:
         MODEL: ${{ inputs.model }}
         AGENT: ${{ inputs.agent }}

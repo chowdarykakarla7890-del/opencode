@@ -71,10 +71,10 @@ describe("plugin.workspace", () => {
 
       yield* Effect.promise(() =>
         Bun.write(
-          path.join(dir, "opencode.json"),
+          path.join(dir, "codetutor.json"),
           JSON.stringify(
             {
-              $schema: "https://opencode.ai/config.json",
+              $schema: "https://codetutor-docs.vercel.app/config.json",
               plugin: [pathToFileURL(file).href],
             },
             null,

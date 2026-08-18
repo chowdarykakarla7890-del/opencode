@@ -16,7 +16,7 @@ import { validateSession } from "../tui/validate-session"
 import { win32InstallCtrlCGuard } from "@opencode-ai/tui/terminal-win32"
 
 declare global {
-  const OPENCODE_WORKER_PATH: string
+  const CODETUTOR_WORKER_PATH: string
 }
 
 type RpcClient = ReturnType<typeof Rpc.client<typeof rpc>>
@@ -50,7 +50,7 @@ function createEventSource(client: RpcClient): EventSource {
 }
 
 async function target() {
-  if (typeof OPENCODE_WORKER_PATH !== "undefined") return OPENCODE_WORKER_PATH
+  if (typeof CODETUTOR_WORKER_PATH !== "undefined") return CODETUTOR_WORKER_PATH
   const dist = new URL("./cli/tui/worker.js", import.meta.url)
   if (await Filesystem.exists(fileURLToPath(dist))) return dist
   return new URL("../tui/worker.ts", import.meta.url)
@@ -69,14 +69,40 @@ export function resolveThreadDirectory(project?: string, envPWD = process.env.PW
   return Filesystem.resolve(cwd)
 }
 
+async function ensureLearnerLevel() {
+  const { AppRuntime } = await import("@/effect/app-runtime")
+  const { Learning } = await import("@/learning/learning")
+  const current = await AppRuntime.runPromise(Learning.profile())
+  if (current) return current
+  if (!process.stdin.isTTY) {
+    UI.println("CodeTutor selected the beginner teaching level for this non-interactive first launch.")
+    UI.println("Change it anytime with `codetutor learn level`.")
+    return AppRuntime.runPromise(Learning.setLevel("beginner"))
+  }
+
+  const { Option } = await import("effect")
+  const { select } = await import("../effect/prompt")
+  const selected = await AppRuntime.runPromise(
+    select<"beginner" | "intermediate" | "advanced">({
+      message: "Choose your current coding level",
+      options: ["beginner", "intermediate", "advanced"].map((level) => ({
+        value: level as "beginner" | "intermediate" | "advanced",
+        label: level[0].toUpperCase() + level.slice(1),
+      })),
+    }),
+  )
+  if (Option.isNone(selected)) throw new Error("A teaching level is required to start CodeTutor")
+  return AppRuntime.runPromise(Learning.setLevel(selected.value))
+}
+
 export const TuiThreadCommand = cmd({
   command: "$0 [project]",
-  describe: "start opencode tui",
+  describe: "start the project-aware CodeTutor",
   builder: (yargs) =>
     withNetworkOptions(yargs)
       .positional("project", {
         type: "string",
-        describe: "path to start opencode in",
+        describe: "project path to teach in",
       })
       .option("model", {
         type: "string",
@@ -147,6 +173,7 @@ export const TuiThreadCommand = cmd({
       process.exitCode = 1
       return
     }
+    await ensureLearnerLevel()
     const noReplay = args.replay === false || args.noReplay === true
 
     if (args.mini) {
@@ -306,4 +333,3 @@ export const TuiThreadCommand = cmd({
     process.exit(0)
   },
 })
-// scratch

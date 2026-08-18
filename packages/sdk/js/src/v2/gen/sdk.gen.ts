@@ -31,11 +31,6 @@ import type {
   EventTuiToastShow,
   ExperimentalCapabilitiesGetErrors,
   ExperimentalCapabilitiesGetResponses,
-  ExperimentalConsoleGetErrors,
-  ExperimentalConsoleGetResponses,
-  ExperimentalConsoleListOrgsErrors,
-  ExperimentalConsoleListOrgsResponses,
-  ExperimentalConsoleSwitchOrgResponses,
   ExperimentalControlPlaneMoveSessionErrors,
   ExperimentalControlPlaneMoveSessionResponses,
   ExperimentalProjectCopyGenerateNameErrors,
@@ -90,6 +85,26 @@ import type {
   GlobalUpgradeResponses,
   InstanceDisposeErrors,
   InstanceDisposeResponses,
+  LearningCatalogErrors,
+  LearningCatalogResponses,
+  LearningCheckErrors,
+  LearningCheckResponses,
+  LearningHintErrors,
+  LearningHintResponses,
+  LearningProfileErrors,
+  LearningProfileResponses,
+  LearningProgressErrors,
+  LearningProgressResponses,
+  LearningResetErrors,
+  LearningResetResponses,
+  LearningResumeErrors,
+  LearningResumeResponses,
+  LearningSetProfileErrors,
+  LearningSetProfileResponses,
+  LearningSolutionErrors,
+  LearningSolutionResponses,
+  LearningStartErrors,
+  LearningStartResponses,
   LocationRef,
   LspStatusErrors,
   LspStatusResponses,
@@ -556,7 +571,7 @@ export class App extends HeyApiClient {
   /**
    * List agents
    *
-   * Get a list of all available AI agents in the OpenCode system.
+   * Get a list of all available AI agents in the CodeTutor system.
    */
   public agents<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -586,7 +601,7 @@ export class App extends HeyApiClient {
   /**
    * List skills
    *
-   * Get a list of all available skills in the OpenCode system.
+   * Get a list of all available skills in the CodeTutor system.
    */
   public skills<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -661,7 +676,7 @@ export class Capabilities extends HeyApiClient {
   /**
    * Get experimental capabilities
    *
-   * Get experimental features enabled on the OpenCode server.
+   * Get experimental features enabled on the CodeTutor server.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -693,120 +708,11 @@ export class Capabilities extends HeyApiClient {
   }
 }
 
-export class Console extends HeyApiClient {
-  /**
-   * Get active Console provider metadata
-   *
-   * Get the active Console org name and the set of provider IDs managed by that Console org.
-   */
-  public get<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<
-      ExperimentalConsoleGetResponses,
-      ExperimentalConsoleGetErrors,
-      ThrowOnError
-    >({
-      url: "/experimental/console",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * List switchable Console orgs
-   *
-   * Get the available Console orgs across logged-in accounts, including the current active org.
-   */
-  public listOrgs<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).get<
-      ExperimentalConsoleListOrgsResponses,
-      ExperimentalConsoleListOrgsErrors,
-      ThrowOnError
-    >({
-      url: "/experimental/console/orgs",
-      ...options,
-      ...params,
-    })
-  }
-
-  /**
-   * Switch active Console org
-   *
-   * Persist a new active Console account/org selection for the current local OpenCode state.
-   */
-  public switchOrg<ThrowOnError extends boolean = false>(
-    parameters?: {
-      directory?: string
-      workspace?: string
-      accountID?: string
-      orgID?: string
-    },
-    options?: Options<never, ThrowOnError>,
-  ) {
-    const params = buildClientParams(
-      [parameters],
-      [
-        {
-          args: [
-            { in: "query", key: "directory" },
-            { in: "query", key: "workspace" },
-            { in: "body", key: "accountID" },
-            { in: "body", key: "orgID" },
-          ],
-        },
-      ],
-    )
-    return (options?.client ?? this.client).post<ExperimentalConsoleSwitchOrgResponses, unknown, ThrowOnError>({
-      url: "/experimental/console/switch",
-      ...options,
-      ...params,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-        ...params.headers,
-      },
-    })
-  }
-}
-
 export class Session extends HeyApiClient {
   /**
    * List sessions
    *
-   * Get a list of all OpenCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
+   * Get a list of all CodeTutor sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1251,11 +1157,6 @@ export class Experimental extends HeyApiClient {
     return (this._capabilities ??= new Capabilities({ client: this.client }))
   }
 
-  private _console?: Console
-  get console(): Console {
-    return (this._console ??= new Console({ client: this.client }))
-  }
-
   private _session?: Session
   get session(): Session {
     return (this._session ??= new Session({ client: this.client }))
@@ -1281,7 +1182,7 @@ export class Config extends HeyApiClient {
   /**
    * Get global configuration
    *
-   * Retrieve the current global OpenCode configuration settings and preferences.
+   * Retrieve the current global CodeTutor configuration settings and preferences.
    */
   public get<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).get<GlobalConfigGetResponses, GlobalConfigGetErrors, ThrowOnError>({
@@ -1293,7 +1194,7 @@ export class Config extends HeyApiClient {
   /**
    * Update global configuration
    *
-   * Update global OpenCode configuration settings and preferences.
+   * Update global CodeTutor configuration settings and preferences.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1319,7 +1220,7 @@ export class Global extends HeyApiClient {
   /**
    * Get health
    *
-   * Get health information about the OpenCode server.
+   * Get health information about the CodeTutor server.
    */
   public health<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).get<GlobalHealthResponses, GlobalHealthErrors, ThrowOnError>({
@@ -1331,7 +1232,7 @@ export class Global extends HeyApiClient {
   /**
    * Get global events
    *
-   * Subscribe to global events from the OpenCode system using server-sent events.
+   * Subscribe to global events from the CodeTutor system using server-sent events.
    */
   public event<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).sse.get<GlobalEventResponses, GlobalEventErrors, ThrowOnError>({
@@ -1343,7 +1244,7 @@ export class Global extends HeyApiClient {
   /**
    * Dispose instance
    *
-   * Clean up and dispose all OpenCode instances, releasing all resources.
+   * Clean up and dispose all CodeTutor instances, releasing all resources.
    */
   public dispose<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).post<GlobalDisposeResponses, GlobalDisposeErrors, ThrowOnError>({
@@ -1418,7 +1319,7 @@ export class Config2 extends HeyApiClient {
   /**
    * Get configuration
    *
-   * Retrieve the current OpenCode configuration settings and preferences.
+   * Retrieve the current CodeTutor configuration settings and preferences.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1448,7 +1349,7 @@ export class Config2 extends HeyApiClient {
   /**
    * Update configuration
    *
-   * Update OpenCode configuration settings and preferences.
+   * Update CodeTutor configuration settings and preferences.
    */
   public update<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1926,7 +1827,7 @@ export class Instance extends HeyApiClient {
   /**
    * Dispose instance
    *
-   * Clean up and dispose the current OpenCode instance, releasing all resources.
+   * Clean up and dispose the current CodeTutor instance, releasing all resources.
    */
   public dispose<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -1958,7 +1859,7 @@ export class Path extends HeyApiClient {
   /**
    * Get paths
    *
-   * Retrieve the current working directory and related path information for the OpenCode instance.
+   * Retrieve the current working directory and related path information for the CodeTutor instance.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -2160,7 +2061,7 @@ export class Command extends HeyApiClient {
   /**
    * List commands
    *
-   * Get a list of all available commands in the OpenCode system.
+   * Get a list of all available commands in the CodeTutor system.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -2246,6 +2147,312 @@ export class Formatter extends HeyApiClient {
     )
     return (options?.client ?? this.client).get<FormatterStatusResponses, FormatterStatusErrors, ThrowOnError>({
       url: "/formatter",
+      ...options,
+      ...params,
+    })
+  }
+}
+
+export class Learning extends HeyApiClient {
+  /**
+   * List lessons
+   */
+  public catalog<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<LearningCatalogResponses, LearningCatalogErrors, ThrowOnError>({
+      url: "/learning/catalog",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get learner profile
+   */
+  public profile<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<LearningProfileResponses, LearningProfileErrors, ThrowOnError>({
+      url: "/learning/profile",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Set learner level
+   */
+  public setProfile<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+      level?: "beginner" | "intermediate" | "advanced"
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "level" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).patch<LearningSetProfileResponses, LearningSetProfileErrors, ThrowOnError>({
+      url: "/learning/profile",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Get lesson progress
+   */
+  public progress<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<LearningProgressResponses, LearningProgressErrors, ThrowOnError>({
+      url: "/learning/progress",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Get active lesson
+   */
+  public resume<ThrowOnError extends boolean = false>(
+    parameters?: {
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).get<LearningResumeResponses, LearningResumeErrors, ThrowOnError>({
+      url: "/learning/resume",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Start or resume a lesson
+   */
+  public start<ThrowOnError extends boolean = false>(
+    parameters: {
+      lessonID: string
+      directory?: string
+      workspace?: string
+      reset?: boolean
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "lessonID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+            { in: "body", key: "reset" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<LearningStartResponses, LearningStartErrors, ThrowOnError>({
+      url: "/learning/lessons/{lessonID}/start",
+      ...options,
+      ...params,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+        ...params.headers,
+      },
+    })
+  }
+
+  /**
+   * Validate a lesson
+   */
+  public check<ThrowOnError extends boolean = false>(
+    parameters: {
+      lessonID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "lessonID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<LearningCheckResponses, LearningCheckErrors, ThrowOnError>({
+      url: "/learning/lessons/{lessonID}/check",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Reveal the next hint
+   */
+  public hint<ThrowOnError extends boolean = false>(
+    parameters: {
+      lessonID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "lessonID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<LearningHintResponses, LearningHintErrors, ThrowOnError>({
+      url: "/learning/lessons/{lessonID}/hint",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Reveal a solution diff
+   */
+  public solution<ThrowOnError extends boolean = false>(
+    parameters: {
+      lessonID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "lessonID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<LearningSolutionResponses, LearningSolutionErrors, ThrowOnError>({
+      url: "/learning/lessons/{lessonID}/solution",
+      ...options,
+      ...params,
+    })
+  }
+
+  /**
+   * Reset a lesson workspace
+   */
+  public reset<ThrowOnError extends boolean = false>(
+    parameters: {
+      lessonID: string
+      directory?: string
+      workspace?: string
+    },
+    options?: Options<never, ThrowOnError>,
+  ) {
+    const params = buildClientParams(
+      [parameters],
+      [
+        {
+          args: [
+            { in: "path", key: "lessonID" },
+            { in: "query", key: "directory" },
+            { in: "query", key: "workspace" },
+          ],
+        },
+      ],
+    )
+    return (options?.client ?? this.client).post<LearningResetResponses, LearningResetErrors, ThrowOnError>({
+      url: "/learning/lessons/{lessonID}/reset",
       ...options,
       ...params,
     })
@@ -2531,7 +2738,7 @@ export class Project extends HeyApiClient {
   /**
    * List all projects
    *
-   * Get a list of projects that have been opened with OpenCode.
+   * Get a list of projects that have been opened with CodeTutor.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -2561,7 +2768,7 @@ export class Project extends HeyApiClient {
   /**
    * Get current project
    *
-   * Retrieve the currently active project that OpenCode is working with.
+   * Retrieve the currently active project that CodeTutor is working with.
    */
   public current<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -2728,7 +2935,7 @@ export class Pty extends HeyApiClient {
   /**
    * List PTY sessions
    *
-   * Get a list of all active pseudo-terminal (PTY) sessions managed by OpenCode.
+   * Get a list of all active pseudo-terminal (PTY) sessions managed by CodeTutor.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3363,7 +3570,7 @@ export class Session2 extends HeyApiClient {
   /**
    * List sessions
    *
-   * Get a list of all OpenCode sessions, sorted by most recently updated.
+   * Get a list of all CodeTutor sessions, sorted by most recently updated.
    */
   public list<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3405,7 +3612,7 @@ export class Session2 extends HeyApiClient {
   /**
    * Create session
    *
-   * Create a new OpenCode session for interacting with AI assistants and managing conversations.
+   * Create a new CodeTutor session for interacting with AI assistants and managing conversations.
    */
   public create<ThrowOnError extends boolean = false>(
     parameters?: {
@@ -3522,7 +3729,7 @@ export class Session2 extends HeyApiClient {
   /**
    * Get session
    *
-   * Retrieve detailed information about a specific OpenCode session.
+   * Retrieve detailed information about a specific CodeTutor session.
    */
   public get<ThrowOnError extends boolean = false>(
     parameters: {
@@ -5508,7 +5715,7 @@ export class Session3 extends HeyApiClient {
   /**
    * List active sessions
    *
-   * Retrieve foreground Session drains currently owned by this OpenCode process. Sessions absent from the result are inactive.
+   * Retrieve foreground Session drains currently owned by this CodeTutor process. Sessions absent from the result are inactive.
    */
   public active<ThrowOnError extends boolean = false>(options?: Options<never, ThrowOnError>) {
     return (options?.client ?? this.client).get<V2SessionActiveResponses, V2SessionActiveErrors, ThrowOnError>({
@@ -5777,7 +5984,7 @@ export class Session3 extends HeyApiClient {
   /**
    * Interrupt session execution
    *
-   * Interrupt active execution owned by this OpenCode process. Idle interruption is a no-op.
+   * Interrupt active execution owned by this CodeTutor process. Idle interruption is a no-op.
    */
   public interrupt<ThrowOnError extends boolean = false>(
     parameters: {
@@ -7160,6 +7367,11 @@ export class OpencodeClient extends HeyApiClient {
   private _formatter?: Formatter
   get formatter(): Formatter {
     return (this._formatter ??= new Formatter({ client: this.client }))
+  }
+
+  private _learning?: Learning
+  get learning(): Learning {
+    return (this._learning ??= new Learning({ client: this.client }))
   }
 
   private _mcp?: Mcp

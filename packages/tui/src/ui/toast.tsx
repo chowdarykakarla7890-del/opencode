@@ -4,6 +4,7 @@ import { useTheme } from "../context/theme"
 import { useTerminalDimensions } from "@opentui/solid"
 import { SplitBorder } from "./border"
 import { TextAttributes } from "@opentui/core"
+import { studioBorder, StudioSectionLabel, useStudioPresentation } from "./studio"
 export type ToastOptions = {
   title?: string
   message: string
@@ -15,6 +16,7 @@ type ToastInput = Omit<ToastOptions, "duration"> & { duration?: number }
 export function Toast() {
   const toast = useToast()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const dimensions = useTerminalDimensions()
 
   return (
@@ -33,9 +35,10 @@ export function Toast() {
           paddingBottom={1}
           backgroundColor={theme.backgroundPanel}
           borderColor={theme[current().variant]}
-          border={["left", "right"]}
-          customBorderChars={SplitBorder.customBorderChars}
+          border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left", "right"]}
+          customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
         >
+          <StudioSectionLabel label={current().variant} />
           <Show when={current().title}>
             <text attributes={TextAttributes.BOLD} marginBottom={1} fg={theme.text}>
               {current().title}

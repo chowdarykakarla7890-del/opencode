@@ -19,7 +19,7 @@ function readyState(input: Partial<WslServersState> = {}): WslServersState {
     installed: [],
     online: [],
     distroProbes: {},
-    opencodeChecks: {},
+    codetutorChecks: {},
     pendingRestart: false,
     servers: [],
     job: null,
@@ -37,7 +37,7 @@ describe("WSL server settings presentation", () => {
     expect(wslRuntimeRetryable({ kind: "stopped" })).toBe(true)
   })
 
-  test("offers install and update only when OpenCode needs attention", () => {
+  test("offers install and update only when CodeTutor needs attention", () => {
     expect(wslOpencodeAction(undefined)).toBeUndefined()
     expect(
       wslOpencodeAction({
@@ -179,7 +179,7 @@ describe("WSL server settings presentation", () => {
     expect(model.busy).toBe(true)
   })
 
-  test("does not report ready when OpenCode is present but cannot run", () => {
+  test("does not report ready when CodeTutor is present but cannot run", () => {
     const model = addServerViewModel({
       state: {
         ...readyWslState,
@@ -188,10 +188,10 @@ describe("WSL server settings presentation", () => {
         distroProbes: {
           Debian: { name: "Debian", canExecute: true, hasBash: true, hasCurl: true, error: null },
         },
-        opencodeChecks: {
+        codetutorChecks: {
           Debian: {
             distro: "Debian",
-            resolvedPath: "/home/me/.opencode/bin/opencode",
+            resolvedPath: "/home/me/.codetutor/bin/opencode",
             version: null,
             expectedVersion: "1.2.3",
             matchesDesktop: null,

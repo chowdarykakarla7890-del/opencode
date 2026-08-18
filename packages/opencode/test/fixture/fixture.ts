@@ -94,9 +94,9 @@ export async function tmpdir<T>(options?: TmpDirOptions<T>) {
   }
   if (options?.config) {
     await Bun.write(
-      path.join(dirpath, "opencode.json"),
+      path.join(dirpath, "codetutor.json"),
       JSON.stringify({
-        $schema: "https://opencode.ai/config.json",
+        $schema: "https://codetutor-docs.vercel.app/config.json",
         ...options.config,
       }),
     )
@@ -153,8 +153,8 @@ export function tmpdirScoped<E = never, R = never>(options?: {
       const resolved = typeof options.config === "function" ? options.config() : options.config
       yield* Effect.promise(() =>
         fs.writeFile(
-          path.join(dir, "opencode.json"),
-          JSON.stringify({ $schema: "https://opencode.ai/config.json", ...resolved }),
+          path.join(dir, "codetutor.json"),
+          JSON.stringify({ $schema: "https://codetutor-docs.vercel.app/config.json", ...resolved }),
         ),
       )
     }

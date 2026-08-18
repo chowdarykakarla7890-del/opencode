@@ -22,7 +22,7 @@ Você pode definir o nível de log com a opção de linha de comando `--log-leve
 
 ## Armazenamento
 
-O opencode armazena dados de sessão e outros dados do aplicativo no disco em:
+O codetutor armazena dados de sessão e outros dados do aplicativo no disco em:
 
 - **macOS/Linux**: `~/.local/share/opencode/`
 - **Windows**: Pressione `WIN+R` e cole `%USERPROFILE%\.local\share\opencode`
@@ -39,13 +39,13 @@ Este diretório contém:
 
 ## Aplicativo de Desktop
 
-O opencode Desktop executa um servidor opencode local (o sidecar `opencode-cli`) em segundo plano. A maioria dos problemas é causada por um plugin com mau funcionamento, um cache corrompido ou uma configuração de servidor incorreta.
+O opencode Desktop executa um servidor codetutor local (o sidecar `opencode-cli`) em segundo plano. A maioria dos problemas é causada por um plugin com mau funcionamento, um cache corrompido ou uma configuração de servidor incorreta.
 
 ### Verificações rápidas
 
 - Saia completamente do aplicativo e reinicie-o.
 - Se o aplicativo mostrar uma tela de erro, clique em **Reiniciar** e copie os detalhes do erro.
-- Apenas macOS: menu `OpenCode` -> **Recarregar Webview** (ajuda se a interface estiver em branco/congelada).
+- Apenas macOS: menu `CodeTutor` -> **Recarregar Webview** (ajuda se a interface estiver em branco/congelada).
 
 ---
 
@@ -57,28 +57,28 @@ Se o aplicativo de desktop estiver travando ao iniciar, pendurado ou se comporta
 
 Abra seu arquivo de configuração global e procure uma chave `plugin`.
 
-- **macOS/Linux**: `~/.config/opencode/opencode.jsonc` (ou `~/.config/opencode/opencode.json`)
-- **macOS/Linux** (instalações mais antigas): `~/.local/share/opencode/opencode.jsonc`
-- **Windows**: Pressione `WIN+R` e cole `%USERPROFILE%\.config\opencode\opencode.jsonc`
+- **macOS/Linux**: `~/.config/opencode/codetutor.jsonc` (ou `~/.config/opencode/codetutor.json`)
+- **macOS/Linux** (instalações mais antigas): `~/.local/share/opencode/codetutor.jsonc`
+- **Windows**: Pressione `WIN+R` e cole `%USERPROFILE%\.config\opencode\codetutor.jsonc`
 
 Se você tiver plugins configurados, desative-os temporariamente removendo a chave ou definindo-a como um array vazio:
 
 ```jsonc
 {
-  "$schema": "https://opencode.ai/config.json",
+  "$schema": "https://codetutor-docs.vercel.app/config.json",
   "plugin": [],
 }
 ```
 
 #### Verificando os diretórios de plugins
 
-O opencode também pode carregar plugins locais do disco. Mova-os temporariamente para fora do caminho (ou renomeie a pasta) e reinicie o aplicativo de desktop:
+O codetutor também pode carregar plugins locais do disco. Mova-os temporariamente para fora do caminho (ou renomeie a pasta) e reinicie o aplicativo de desktop:
 
 - **Plugins globais**
   - **macOS/Linux**: `~/.config/opencode/plugins/`
   - **Windows**: Pressione `WIN+R` e cole `%USERPROFILE%\.config\opencode\plugins`
 - **Plugins de projeto** (apenas se você usar configuração por projeto)
-  - `<your-project>/.opencode/plugins/`
+  - `<your-project>/.codetutor/plugins/`
 
 Se o aplicativo voltar a funcionar, reative os plugins um por um para descobrir qual está causando o problema.
 
@@ -86,7 +86,7 @@ Se o aplicativo voltar a funcionar, reative os plugins um por um para descobrir 
 
 ### Limpando o cache
 
-Se desativar plugins não ajudar (ou se a instalação de um plugin estiver travada), limpe o cache para que o opencode possa reconstruí-lo.
+Se desativar plugins não ajudar (ou se a instalação de um plugin estiver travada), limpe o cache para que o codetutor possa reconstruí-lo.
 
 1. Saia completamente do opencode Desktop.
 2. Exclua o diretório de cache:
@@ -111,13 +111,13 @@ Na tela inicial, clique no nome do servidor (com o ponto de status) para abrir o
 
 #### Removendo `server.port` / `server.hostname` da sua configuração
 
-Se seu `opencode.json(c)` contiver uma seção `server`, remova-a temporariamente e reinicie o aplicativo de desktop.
+Se seu `codetutor.json(c)` contiver uma seção `server`, remova-a temporariamente e reinicie o aplicativo de desktop.
 
 #### Verificando as variáveis de ambiente
 
-Se você tiver `OPENCODE_PORT` definido em seu ambiente, o aplicativo de desktop tentará usar essa porta para o servidor local.
+Se você tiver `CODETUTOR_PORT` definido em seu ambiente, o aplicativo de desktop tentará usar essa porta para o servidor local.
 
-- Desfaça `OPENCODE_PORT` (ou escolha uma porta livre) e reinicie.
+- Desfaça `CODETUTOR_PORT` (ou escolha uma porta livre) e reinicie.
 
 ---
 
@@ -146,7 +146,7 @@ Se você estiver enfrentando desempenho lento, problemas de acesso a arquivos ou
 
 O opencode Desktop só mostra notificações do sistema quando:
 
-- as notificações estão habilitadas para o opencode nas configurações do seu sistema operacional, e
+- as notificações estão habilitadas para o codetutor nas configurações do seu sistema operacional, e
 - a janela do aplicativo não está focada.
 
 ---
@@ -177,7 +177,7 @@ Se você estiver enfrentando problemas com o opencode:
 
    A melhor maneira de relatar bugs ou solicitar recursos é através do nosso repositório no GitHub:
 
-   [**github.com/anomalyco/opencode/issues**](https://github.com/anomalyco/opencode/issues)
+   [**github.com/chowdarykakarla7890-del/opencode/issues**](https://github.com/chowdarykakarla7890-del/opencode/issues)
 
    Antes de criar um novo problema, pesquise problemas existentes para ver se seu problema já foi relatado.
 
@@ -185,7 +185,7 @@ Se você estiver enfrentando problemas com o opencode:
 
    Para ajuda em tempo real e discussão da comunidade, junte-se ao nosso servidor Discord:
 
-   [**opencode.ai/discord**](https://opencode.ai/discord)
+   [**codetutor-docs.vercel.app/discord**](https://codetutor-docs.vercel.app/discord)
 
 ---
 
@@ -195,11 +195,11 @@ Aqui estão alguns problemas comuns e como resolvê-los.
 
 ---
 
-### O opencode não inicia
+### O codetutor não inicia
 
 1. Verifique os logs em busca de mensagens de erro
 2. Tente executar com `--print-logs` para ver a saída no terminal
-3. Certifique-se de que você tem a versão mais recente com `opencode upgrade`
+3. Certifique-se de que você tem a versão mais recente com `codetutor upgrade`
 
 ---
 
@@ -226,7 +226,7 @@ Exemplos:
 - `openrouter/google/gemini-2.5-flash`
 - `opencode/kimi-k2`
 
-Para descobrir quais modelos você tem acesso, execute `opencode models`
+Para descobrir quais modelos você tem acesso, execute `codetutor models`
 
 ---
 
@@ -251,7 +251,7 @@ Para resolver isso:
 
 ### AI_APICallError e problemas com pacotes de provedores
 
-Se você encontrar erros de chamada de API, isso pode ser devido a pacotes de provedores desatualizados. O opencode instala dinamicamente pacotes de provedores (OpenAI, Anthropic, Google, etc.) conforme necessário e os armazena em cache localmente.
+Se você encontrar erros de chamada de API, isso pode ser devido a pacotes de provedores desatualizados. O codetutor instala dinamicamente pacotes de provedores (OpenAI, Anthropic, Google, etc.) conforme necessário e os armazena em cache localmente.
 
 Para resolver problemas com pacotes de provedores:
 
@@ -263,9 +263,9 @@ Para resolver problemas com pacotes de provedores:
 
    No Windows, pressione `WIN+R` e exclua: `%USERPROFILE%\.cache\opencode`
 
-2. Reinicie o opencode para reinstalar os pacotes de provedores mais recentes
+2. Reinicie o codetutor para reinstalar os pacotes de provedores mais recentes
 
-Isso forçará o opencode a baixar as versões mais recentes dos pacotes de provedores, o que muitas vezes resolve problemas de compatibilidade com parâmetros de modelo e alterações na API.
+Isso forçará o codetutor a baixar as versões mais recentes dos pacotes de provedores, o que muitas vezes resolve problemas de compatibilidade com parâmetros de modelo e alterações na API.
 
 ---
 
@@ -296,4 +296,4 @@ Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 export DISPLAY=:99.0
 ```
 
-O opencode detectará se você está usando Wayland e preferirá `wl-clipboard`, caso contrário, tentará encontrar ferramentas de área de transferência na ordem: `xclip` e `xsel`.
+O codetutor detectará se você está usando Wayland e preferirá `wl-clipboard`, caso contrário, tentará encontrar ferramentas de área de transferência na ordem: `xclip` e `xsel`.

@@ -1,10 +1,8 @@
-import { AccountID, OrgID } from "@/account/schema"
 import { MCP } from "@/mcp"
 
 import { Session } from "@/session/session"
 import { SessionID } from "@/session/schema"
 import { Worktree } from "@/worktree"
-import { NonNegativeInt } from "@opencode-ai/core/schema"
 import { Schema } from "effect"
 import { HttpApi, HttpApiEndpoint, HttpApiError, HttpApiGroup, HttpApiSchema, OpenApi } from "effect/unstable/httpapi"
 import { Authorization } from "../middleware/authorization"
@@ -19,33 +17,9 @@ import { QueryBoolean } from "./query"
 import { ProviderV2 } from "@opencode-ai/core/provider"
 import { ModelV2 } from "@opencode-ai/core/model"
 
-const ConsoleStateResponse = Schema.Struct({
-  consoleManagedProviders: Schema.mutable(Schema.Array(Schema.String)),
-  activeOrgName: Schema.optionalKey(Schema.String),
-  switchableOrgCount: NonNegativeInt,
-}).annotate({ identifier: "ConsoleState" })
-
 const CapabilitiesResponse = Schema.Struct({
   backgroundSubagents: Schema.Boolean,
 }).annotate({ identifier: "ExperimentalCapabilities" })
-
-const ConsoleOrgOption = Schema.Struct({
-  accountID: Schema.String,
-  accountEmail: Schema.String,
-  accountUrl: Schema.String,
-  orgID: Schema.String,
-  orgName: Schema.String,
-  active: Schema.Boolean,
-})
-
-const ConsoleOrgList = Schema.Struct({
-  orgs: Schema.Array(ConsoleOrgOption),
-})
-
-export const ConsoleSwitchPayload = Schema.Struct({
-  accountID: AccountID,
-  orgID: OrgID,
-})
 
 const ToolIDs = Schema.Array(Schema.String).annotate({ identifier: "ToolIDs" })
 const ToolListItem = Schema.Struct({
@@ -89,9 +63,6 @@ export const SessionListQuery = Schema.Struct({
 
 export const ExperimentalPaths = {
   capabilities: "/experimental/capabilities",
-  console: "/experimental/console",
-  consoleOrgs: "/experimental/console/orgs",
-  consoleSwitch: "/experimental/console/switch",
   tool: "/experimental/tool",
   toolIDs: "/experimental/tool/ids",
   worktree: "/experimental/worktree",
@@ -112,41 +83,7 @@ export const ExperimentalApi = HttpApi.make("experimental")
           OpenApi.annotations({
             identifier: "experimental.capabilities.get",
             summary: "Get experimental capabilities",
-            description: "Get experimental features enabled on the OpenCode server.",
-          }),
-        ),
-        HttpApiEndpoint.get("console", ExperimentalPaths.console, {
-          query: WorkspaceRoutingQuery,
-          success: described(ConsoleStateResponse, "Active Console provider metadata"),
-          error: HttpApiError.InternalServerError,
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "experimental.console.get",
-            summary: "Get active Console provider metadata",
-            description: "Get the active Console org name and the set of provider IDs managed by that Console org.",
-          }),
-        ),
-        HttpApiEndpoint.get("consoleOrgs", ExperimentalPaths.consoleOrgs, {
-          query: WorkspaceRoutingQuery,
-          success: described(ConsoleOrgList, "Switchable Console orgs"),
-          error: HttpApiError.InternalServerError,
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "experimental.console.listOrgs",
-            summary: "List switchable Console orgs",
-            description: "Get the available Console orgs across logged-in accounts, including the current active org.",
-          }),
-        ),
-        HttpApiEndpoint.post("consoleSwitch", ExperimentalPaths.consoleSwitch, {
-          query: WorkspaceRoutingQuery,
-          payload: ConsoleSwitchPayload,
-          success: described(Schema.Boolean, "Switch success"),
-          error: HttpApiError.BadRequest,
-        }).annotateMerge(
-          OpenApi.annotations({
-            identifier: "experimental.console.switchOrg",
-            summary: "Switch active Console org",
-            description: "Persist a new active Console account/org selection for the current local OpenCode state.",
+            description: "Get experimental features enabled on the CodeTutor server.",
           }),
         ),
         HttpApiEndpoint.get("tool", ExperimentalPaths.tool, {
@@ -229,7 +166,7 @@ export const ExperimentalApi = HttpApi.make("experimental")
             identifier: "experimental.session.list",
             summary: "List sessions",
             description:
-              "Get a list of all OpenCode sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.",
+              "Get a list of all CodeTutor sessions across projects, sorted by most recently updated. Archived sessions are excluded by default.",
           }),
         ),
         HttpApiEndpoint.post("sessionBackground", ExperimentalPaths.sessionBackground, {

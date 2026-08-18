@@ -14,6 +14,7 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_EXPLORE from "./prompt/explore.txt"
 import PROMPT_SUMMARY from "./prompt/summary.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
+import PROMPT_TUTOR from "./prompt/tutor.txt"
 import { Permission } from "@/permission"
 import { mergeDeep, pipe, sortBy, values } from "remeda"
 import { Global } from "@opencode-ai/core/global"
@@ -138,10 +139,11 @@ const layer = Layer.effect(
         const user = Permission.fromConfig(cfg.permission ?? {})
 
         const agents: Record<string, Info> = {
-          build: {
-            name: "build",
-            description: "The default agent. Executes tools based on configured permissions.",
+          tutor: {
+            name: "tutor",
+            description: "The default CodeTutor agent. Teaches in the learner's real repository and adapts its help to their level.",
             options: {},
+            prompt: PROMPT_TUTOR,
             permission: Permission.merge(
               defaults,
               Permission.fromConfig({
@@ -150,6 +152,14 @@ const layer = Layer.effect(
               }),
               user,
             ),
+            mode: "primary",
+            native: true,
+          },
+          build: {
+            name: "build",
+            description: "Implementation agent for learners who explicitly request direct edits or complete solutions.",
+            options: {},
+            permission: Permission.merge(defaults, user),
             mode: "primary",
             native: true,
           },
@@ -170,7 +180,7 @@ const layer = Layer.effect(
                 },
                 edit: {
                   "*": "deny",
-                  [path.join(".opencode", "plans", "*.md")]: "allow",
+                  [path.join(".codetutor", "plans", "*.md")]: "allow",
                   [path.relative(ctx.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
                 },
               }),
@@ -319,7 +329,7 @@ const layer = Layer.effect(
             agents,
             values(),
             sortBy(
-              [(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "build"), "desc"],
+              [(x) => (cfg.default_agent ? x.name === cfg.default_agent : x.name === "tutor"), "desc"],
               [(x) => x.name, "asc"],
             ),
           )

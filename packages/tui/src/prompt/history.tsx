@@ -32,13 +32,89 @@ export function parsePromptHistory(text: string) {
     .filter(Boolean)
     .map((line) => {
       try {
-        return JSON.parse(line) as PromptInfo
+        const entry: unknown = JSON.parse(line)
+        return isPromptInfo(entry) ? entry : undefined
       } catch {
         return undefined
       }
     })
     .filter((line): line is PromptInfo => line !== undefined)
     .slice(-MAX_HISTORY_ENTRIES)
+}
+
+function isPromptInfo(input: unknown): input is PromptInfo {
+  if (!isRecord(input)) return false
+  if (typeof input.input !== "string" || !Array.isArray(input.parts)) return false
+  if (input.mode !== undefined && input.mode !== "normal" && input.mode !== "shell") return false
+  return input.parts.every(isPromptPart)
+}
+
+function isPromptPart(input: unknown): input is PromptInfo["parts"][number] {
+  if (!isRecord(input) || typeof input.type !== "string") return false
+  if (input.type === "text") {
+    if (typeof input.text !== "string") return false
+    if (input.synthetic !== undefined && typeof input.synthetic !== "boolean") return false
+    if (input.ignored !== undefined && typeof input.ignored !== "boolean") return false
+    if (input.time !== undefined && !isTime(input.time)) return false
+    if (input.metadata !== undefined && !isRecord(input.metadata)) return false
+    return input.source === undefined || isTextSource(input.source)
+  }
+  if (input.type === "file") {
+    if (typeof input.mime !== "string" || typeof input.url !== "string") return false
+    if (input.filename !== undefined && typeof input.filename !== "string") return false
+    return input.source === undefined || isFileSource(input.source)
+  }
+  if (input.type === "agent") {
+    if (typeof input.name !== "string") return false
+    return input.source === undefined || isSourceText(input.source)
+  }
+  return false
+}
+
+function isFileSource(input: unknown) {
+  if (!isRecord(input) || !isSourceText(input.text) || typeof input.type !== "string") return false
+  if (input.type === "file") return typeof input.path === "string"
+  if (input.type === "resource") return typeof input.clientName === "string" && typeof input.uri === "string"
+  if (input.type !== "symbol") return false
+  return (
+    typeof input.path === "string" &&
+    typeof input.name === "string" &&
+    typeof input.kind === "number" &&
+    isRange(input.range)
+  )
+}
+
+function isTextSource(input: unknown) {
+  return isRecord(input) && isSourceText(input.text)
+}
+
+function isSourceText(input: unknown) {
+  return (
+    isRecord(input) &&
+    typeof input.value === "string" &&
+    typeof input.start === "number" &&
+    typeof input.end === "number"
+  )
+}
+
+function isRange(input: unknown) {
+  return isRecord(input) && isPosition(input.start) && isPosition(input.end)
+}
+
+function isPosition(input: unknown) {
+  return isRecord(input) && typeof input.line === "number" && typeof input.character === "number"
+}
+
+function isTime(input: unknown) {
+  return (
+    isRecord(input) &&
+    typeof input.start === "number" &&
+    (input.end === undefined || typeof input.end === "number")
+  )
+}
+
+function isRecord(input: unknown): input is Record<string, unknown> {
+  return typeof input === "object" && input !== null && !Array.isArray(input)
 }
 
 export function isDuplicateEntry(previous: PromptInfo | undefined, next: PromptInfo): boolean {
@@ -70,7 +146,7 @@ export const { use: usePromptHistory, provider: PromptHistoryProvider } = create
         if (!store.history.length) return undefined
         const current = store.history.at(store.index)
         if (!current) return undefined
-        if (current.input !== input && input.length) return
+        if (current.input !== input && input.length) return undefined
         setStore(
           produce((draft) => {
             const next = store.index + direction

@@ -1,0 +1,39 @@
+---
+title: Learning with CodeTutor
+description: Start lessons, use layered hints, run deterministic checks, and keep local progress.
+---
+
+CodeTutor includes 43 versioned JavaScript and TypeScript lessons. Lesson files and progress stay on your computer; no account or cloud sync is required.
+
+## Choose your level
+
+On first use, choose beginner, intermediate, or advanced. Change it later:
+
+```sh
+codetutor learn level intermediate
+```
+
+The tutor asks questions and gives layered hints for beginners, collaborates with partial scaffolding at the intermediate level, and stays concise for advanced learners.
+
+## Start a lesson
+
+```sh
+codetutor learn list
+codetutor learn start js-01-values
+```
+
+CodeTutor creates an isolated workspace in its platform data directory. Starting the same lesson resumes that workspace.
+
+Inside a tutoring session, use `/lesson`, `/hint`, `/check`, `/progress`, and `/solution`. A solution reveal is recorded and displayed without overwriting your code.
+
+## Validate your work
+
+```sh
+codetutor learn check
+```
+
+Only the bundled deterministic validator can mark a lesson complete. AI feedback explains failures but cannot override them.
+
+## Work offline
+
+Catalog listing, scaffolding, validation, progress, hints, and solutions work without a model connection. An AI tutoring conversation requires a configured provider.

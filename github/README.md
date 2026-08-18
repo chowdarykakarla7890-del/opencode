@@ -1,6 +1,6 @@
 # opencode GitHub Action
 
-A GitHub Action that integrates [opencode](https://opencode.ai) directly into your GitHub workflow.
+A GitHub Action that integrates [opencode](https://codetutor-docs.vercel.app) directly into your GitHub workflow.
 
 Mention `/opencode` in your comment, and opencode will execute tasks within your GitHub Actions runner.
 
@@ -53,7 +53,7 @@ This allows for more targeted requests without needing to specify file paths or 
 Run the following command in the terminal from your GitHub repo:
 
 ```bash
-opencode github install
+codetutor github install
 ```
 
 This will walk you through installing the GitHub app, creating the workflow, and setting up secrets.
@@ -88,7 +88,7 @@ This will walk you through installing the GitHub app, creating the workflow, and
               persist-credentials: false
 
           - name: Run opencode
-           uses: anomalyco/opencode/github@latest
+           uses: chowdarykakarla7890-del/opencode/github@latest
            env:
              ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,7 +101,7 @@ This will walk you through installing the GitHub app, creating the workflow, and
 
 ## Support
 
-This is an early release. If you encounter issues or have feedback, please create an issue at https://github.com/anomalyco/opencode/issues.
+This is an early release. If you encounter issues or have feedback, please create an issue at https://github.com/chowdarykakarla7890-del/opencode/issues.
 
 ## Development
 

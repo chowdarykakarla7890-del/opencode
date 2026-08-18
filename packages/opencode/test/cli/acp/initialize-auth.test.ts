@@ -4,7 +4,7 @@ import { Effect } from "effect"
 import { cliIt } from "../../lib/cli-process"
 import { createAcpClient, expectErrorCode, initialize } from "./helpers"
 
-describe("opencode acp initialize/auth subprocess", () => {
+describe("codetutor acp initialize/auth subprocess", () => {
   cliIt.live(
     "initialize responds with capabilities",
     ({ opencode }) =>
@@ -21,7 +21,7 @@ describe("opencode acp initialize/auth subprocess", () => {
         expect(initialized.agentCapabilities?.sessionCapabilities?.fork).toEqual({})
         expect(initialized.agentCapabilities?.sessionCapabilities?.list).toEqual({})
         expect(initialized.agentCapabilities?.sessionCapabilities?.resume).toEqual({})
-        expect(initialized.agentInfo?.name).toBe("OpenCode")
+        expect(initialized.agentInfo?.name).toBe("CodeTutor")
       }),
     60_000,
   )
@@ -41,7 +41,7 @@ describe("opencode acp initialize/auth subprocess", () => {
 
         const rejected = yield* acp.request<AuthenticateResponse>("authenticate", { methodId: "missing-auth-method" })
         expectErrorCode(rejected.error, -32602)
-        expect(JSON.stringify(rejected.error)).not.toContain(process.env.OPENCODE_AUTH_CONTENT ?? "not-present")
+        expect(JSON.stringify(rejected.error)).not.toContain(process.env.CODETUTOR_AUTH_CONTENT ?? "not-present")
       }),
     60_000,
   )

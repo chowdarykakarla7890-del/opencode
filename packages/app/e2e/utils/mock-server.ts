@@ -28,9 +28,17 @@ export interface MockServerConfig {
   fileContent?: (path: string) => unknown | Promise<unknown>
   findFiles?: (input: { query: string; dirs?: string; limit?: number }) => unknown
   sessionStatus?: Record<string, unknown> | (() => Record<string, unknown>)
+  learning?: {
+    catalog: () => unknown[]
+    profile: () => unknown
+    setProfile?: (body: unknown) => unknown
+    start?: (lessonID: string, body: unknown) => unknown
+    check?: (lessonID: string) => unknown
+    reset?: (lessonID: string) => unknown
+  }
 }
 
-export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
+export async function mockCodeTutorServer(page: Page, config: MockServerConfig) {
   const cursors = new Map<string, string>()
   let nextCursor = 0
   const staticRoutes: Record<string, unknown> = {
@@ -39,7 +47,7 @@ export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
       config: config.directory,
       worktree: config.directory,
       directory: config.directory,
-      home: "C:/OpenCode",
+      home: "C:/CodeTutor",
     },
     "/project": [config.project],
     "/project/current": config.project,
@@ -77,6 +85,20 @@ export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
     if (path === "/api/health" && config.protocol === "v2")
       return json(route, { healthy: true, version: "2.0.0", pid: 1 })
     if (path === "/experimental/capabilities") return json(route, { backgroundSubagents: true })
+    if (path === "/learning/catalog" && config.learning) return json(route, config.learning.catalog())
+    if (path === "/learning/profile" && config.learning) {
+      if (route.request().method() === "PATCH")
+        return json(route, config.learning.setProfile?.(route.request().postDataJSON()) ?? config.learning.profile())
+      return json(route, config.learning.profile())
+    }
+    const learningAction = path.match(/^\/learning\/lessons\/([^/]+)\/(start|check|reset)$/)
+    if (learningAction && config.learning) {
+      const lessonID = decodeURIComponent(learningAction[1])
+      if (learningAction[2] === "start")
+        return json(route, config.learning.start?.(lessonID, route.request().postDataJSON()) ?? {})
+      if (learningAction[2] === "check") return json(route, config.learning.check?.(lessonID) ?? {})
+      return json(route, config.learning.reset?.(lessonID) ?? {})
+    }
     if (path === "/provider")
       return json(route, typeof config.provider === "function" ? config.provider() : config.provider)
     if (path === "/provider/auth") return json(route, config.integrationMethods ?? {})
@@ -159,7 +181,7 @@ export async function mockOpenCodeServer(page: Page, config: MockServerConfig) {
         config: config.directory,
         worktree: config.directory,
         directory: config.directory,
-        home: "C:/OpenCode",
+        home: "C:/CodeTutor",
       })
     if (path === "/api/permission/request")
       return json(route, {

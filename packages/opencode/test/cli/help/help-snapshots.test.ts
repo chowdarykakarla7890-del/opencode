@@ -8,8 +8,8 @@
 // diff tells you exactly which command(s) changed.
 //
 // Snapshots are taken at COLUMNS=120 so wrapping is stable across
-// terminal sizes. The default opencode tui command is excluded —
-// `opencode --help` includes an ASCII banner that pulls in the install
+// terminal sizes. The default CodeTutor TUI command is excluded —
+// `codetutor --help` includes an ASCII banner that pulls in the install
 // version (changes per release), so we'd snapshot a moving target.
 import { describe, expect } from "bun:test"
 import { Effect } from "effect"
@@ -38,10 +38,10 @@ function normalize(text: string): string {
   })
 }
 
-// Top-level commands. Order matches what `opencode --help` prints today;
+// Top-level commands. Order matches what `codetutor --help` prints today;
 // keep it in that order so the snapshot file reads as a table of contents.
 // `completion` is intentionally excluded — it's a yargs built-in that emits
-// top-level help on `--help` and exits 1; not a real opencode command.
+// top-level help on `--help` and exits 1; not a real CodeTutor command.
 const TOP_LEVEL = [
   "acp",
   "mcp",
@@ -58,11 +58,11 @@ const TOP_LEVEL = [
   "stats",
   "export",
   "import",
-  "github",
   "pr",
   "session",
   "plugin",
   "db",
+  "learn",
 ] as const
 
 // Subcommands worth pinning. Not exhaustive — the goal is one snapshot per
@@ -80,9 +80,16 @@ const SUBCOMMANDS = [
   ["agent", "list"],
   ["session", "list"],
   ["session", "delete"],
-  ["github", "install"],
-  ["github", "run"],
   ["db", "path"],
+  ["learn", "list"],
+  ["learn", "start"],
+  ["learn", "resume"],
+  ["learn", "status"],
+  ["learn", "check"],
+  ["learn", "hint"],
+  ["learn", "solution"],
+  ["learn", "reset"],
+  ["learn", "level"],
 ] as const
 
 // Fixed wrap width so a developer's terminal doesn't affect snapshots.
@@ -90,7 +97,7 @@ const SUBCOMMANDS = [
 // different wraps from a 200-col local terminal.
 const SNAPSHOT_ENV = { COLUMNS: "120" }
 
-describe("opencode CLI help-text snapshots", () => {
+describe("CodeTutor CLI help-text snapshots", () => {
   // Single test, parallel spawns. Each command's help fires under
   // `concurrency: 8` — wall-clock stays under ~10s even for ~35 commands,
   // versus ~1 minute if we serialized.
@@ -118,7 +125,7 @@ describe("opencode CLI help-text snapshots", () => {
             Effect.gen(function* () {
               const result = yield* opencode.spawn([...argv, "--help"], { env: SNAPSHOT_ENV })
               if (result.exitCode !== 0) {
-                return yield* Effect.fail(`opencode ${argv.join(" ")}: exit ${result.exitCode}`)
+                return yield* Effect.fail(`codetutor ${argv.join(" ")}: exit ${result.exitCode}`)
               }
               return { argv, result }
             }),
@@ -129,7 +136,7 @@ describe("opencode CLI help-text snapshots", () => {
           // yargs writes --help to stderr, not stdout. Snapshotting stderr
           // means our test catches the help body; stdout for these commands
           // is expected to be empty.
-          expect(normalize(result.stderr)).toMatchSnapshot(`opencode ${argv.join(" ")} --help`)
+          expect(normalize(result.stderr)).toMatchSnapshot(`codetutor ${argv.join(" ")} --help`)
         }
         if (failures.length > 0) {
           throw new Error(`Help text failed for:\n  ${failures.join("\n  ")}`)

@@ -202,7 +202,7 @@ export const githubInstall = Effect.fn("Cli.github.install")(function* () {
             "",
             "    3. Go to a GitHub issue and comment `/oc summarize` to see the agent in action",
             "",
-            "   Learn more about the GitHub agent - https://opencode.ai/docs/github/#usage-examples",
+            "   Learn more about the GitHub agent - https://codetutor-docs.vercel.app/docs/github/#usage-examples",
           ].join("\n"),
         )
       }
@@ -322,7 +322,7 @@ export const githubInstall = Effect.fn("Cli.github.install")(function* () {
         s.stop("Installed GitHub app")
 
         async function getInstallation() {
-          return await fetch(`https://api.opencode.ai/get_github_app_installation?owner=${app.owner}&repo=${app.repo}`)
+          return await fetch(`https://api.codetutor.ai/get_github_app_installation?owner=${app.owner}&repo=${app.repo}`)
             .then((res) => res.json())
             .then((data) => data.installation)
         }
@@ -364,7 +364,7 @@ jobs:
           persist-credentials: false
 
       - name: Run opencode
-        uses: anomalyco/opencode/github@latest${envStr}
+        uses: chowdarykakarla7890-del/opencode/github@latest${envStr}
         with:
           model: ${provider}/${model}`,
         )
@@ -428,7 +428,7 @@ export const githubRun = Effect.fn("Cli.github.run")(function* (args: { event?: 
         ? (payload as IssueCommentEvent | IssuesEvent).issue.number
         : (payload as PullRequestEvent | PullRequestReviewCommentEvent).pull_request.number
     const runUrl = `/${owner}/${repo}/actions/runs/${runId}`
-    const shareBaseUrl = isMock ? "https://dev.opencode.ai" : "https://opencode.ai"
+    const shareBaseUrl = isMock ? "https://dev.codetutor.ai" : "https://codetutor-docs.vercel.app"
 
     let appToken: string
     let octoRest: Octokit
@@ -496,7 +496,7 @@ export const githubRun = Effect.fn("Cli.github.run")(function* (args: { event?: 
         await addReaction(commentType)
       }
 
-      // Setup opencode session
+      // Set up CodeTutor session
       const repoData = await fetchRepo()
       session = await runLocalEffect(
         sessionSvc.create({
@@ -516,7 +516,7 @@ export const githubRun = Effect.fn("Cli.github.run")(function* (args: { event?: 
         await runLocalEffect(sessionShare.share(session.id))
         return session.id.slice(-8)
       })()
-      console.log("opencode session", session.id)
+      console.log("CodeTutor session", session.id)
 
       // Handle event types:
       // REPO_EVENTS (schedule, workflow_dispatch): no issue/PR context, output to logs/PR only
@@ -689,7 +689,7 @@ export const githubRun = Effect.fn("Cli.github.run")(function* (args: { event?: 
 
     function normalizeOidcBaseUrl(): string {
       const value = process.env["OIDC_BASE_URL"]
-      if (!value) return "https://api.opencode.ai"
+      if (!value) return "https://api.codetutor.ai"
       return value.replace(/\/+$/, "")
     }
 
@@ -1354,7 +1354,7 @@ export const githubRun = Effect.fn("Cli.github.run")(function* (args: { event?: 
 
         return `<a href="${shareBaseUrl}/s/${shareId}"><img width="200" alt="${titleAlt}" src="https://social-cards.sst.dev/opencode-share/${title64}.png?model=${providerID}/${modelID}&version=${session.version}&id=${shareId}" /></a>\n`
       })()
-      const shareUrl = shareId ? `[opencode session](${shareBaseUrl}/s/${shareId})&nbsp;&nbsp;|&nbsp;&nbsp;` : ""
+      const shareUrl = shareId ? `[CodeTutor session](${shareBaseUrl}/s/${shareId})&nbsp;&nbsp;|&nbsp;&nbsp;` : ""
       return `\n\n${image}${shareUrl}[github run](${runUrl})`
     }
 

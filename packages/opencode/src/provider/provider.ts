@@ -375,7 +375,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
           }
 
           // Region resolution precedence (highest to lowest):
-          // 1. options.region from opencode.json provider config
+          // 1. options.region from codetutor.json provider config
           // 2. defaultRegion from AWS_REGION environment variable
           // 3. Default "us-east-1" (baked into defaultRegion)
           const region = options?.region ?? defaultRegion
@@ -458,7 +458,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
+            "HTTP-Referer": "https://codetutor-docs.vercel.app/",
             "X-Title": "opencode",
             "X-Source": "opencode",
           },
@@ -469,7 +469,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
+            "HTTP-Referer": "https://codetutor-docs.vercel.app/",
             "X-Title": "opencode",
           },
         },
@@ -479,9 +479,9 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: provider.source === "config",
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
+            "HTTP-Referer": "https://codetutor-docs.vercel.app/",
             "X-Title": "opencode",
-            "X-BILLING-INVOKE-ORIGIN": "OpenCode",
+            "X-BILLING-INVOKE-ORIGIN": "CodeTutor",
           },
         },
       }),
@@ -490,7 +490,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "http-referer": "https://opencode.ai/",
+            "http-referer": "https://codetutor-docs.vercel.app/",
             "x-title": "opencode",
           },
         },
@@ -596,7 +596,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
+            "HTTP-Referer": "https://codetutor-docs.vercel.app/",
             "X-Title": "opencode",
           },
         },
@@ -796,7 +796,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
       if (!apiToken) {
         throw new Error(
           "CLOUDFLARE_API_TOKEN (or CF_AIG_TOKEN) is required for Cloudflare AI Gateway. " +
-            "Set it via environment variable or run `opencode auth cloudflare-ai-gateway`.",
+            "Set it via environment variable or run `codetutor auth cloudflare-ai-gateway`.",
         )
       }
 
@@ -854,7 +854,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
         autoload: false,
         options: {
           headers: {
-            "HTTP-Referer": "https://opencode.ai/",
+            "HTTP-Referer": "https://codetutor-docs.vercel.app/",
             "X-Title": "opencode",
           },
         },
@@ -882,7 +882,7 @@ function custom(dep: CustomDep): Record<string, CustomLoader> {
           autoload: false,
           async getModel() {
             throw new Error(
-              `Snowflake Cortex: missing credentials (${missing}). Provide a bearer token (OAuth, JWT, or PAT) via env var, opencode auth, or provider options.`,
+              `Snowflake Cortex: missing credentials (${missing}). Provide a bearer token (OAuth, JWT, or PAT) via env var, codetutor auth, or provider options.`,
             )
           },
         }
@@ -1385,7 +1385,7 @@ const layer = Layer.effect(
 
         // now read config providers - includes any modifications from plugin config() hook
         const configProviders = Object.entries(cfg.provider ?? {})
-        const disabled = new Set(cfg.disabled_providers ?? [])
+        const disabled = new Set([...(cfg.disabled_providers ?? []), "opencode-go"])
         const enabled = cfg.enabled_providers ? new Set(cfg.enabled_providers) : null
 
         function isProviderAllowed(providerID: ProviderV2.ID): boolean {

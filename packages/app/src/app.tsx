@@ -68,8 +68,10 @@ import { createSessionLineage } from "@/pages/session/session-lineage"
 import { SessionPage, SessionRouteErrorBoundary, TargetSessionRouteContent } from "@/pages/session"
 import { NewHome } from "@/pages/home"
 import { LegacyHome } from "@/pages/home/legacy-home"
+import { PromptBuilder } from "@/pages/prompt-builder"
 
 const NewSession = lazy(() => import("@/pages/new-session"))
+const LearningPage = lazy(() => import("@/pages/learning"))
 
 const SessionRoute = () => {
   const settings = useSettings()
@@ -268,7 +270,7 @@ function LayoutCompatibility(props: ParentProps) {
 
 declare global {
   interface Window {
-    __OPENCODE__?: {
+    __CODETUTOR__?: {
       deepLinks?: string[]
     }
     api?: {
@@ -626,6 +628,7 @@ function Routes(props: { serverScoped?: JSX.Element }) {
           {
             <>
               <Route path="/" component={LegacyHome} />
+              <Route path="/learning" component={LearningPage} />
               <Route path="/server/:serverKey/session/:id" component={LegacyTargetSessionRoute} />
             </>
           }
@@ -637,8 +640,13 @@ function Routes(props: { serverScoped?: JSX.Element }) {
       </Route>
       <Show when={settings.general.newLayoutDesigns()}>
         <Route path="/" component={NewHome} />
+        <Route path="/builder" component={PromptBuilder} />
+        <Route path="/learning" component={() => <SelectedServerProviders><LearningPage /></SelectedServerProviders>} />
         <Route path="/:dir/session/:id" component={NewLayoutLegacySessionRedirect} />
         <Route path="/server/:serverKey/session/:id" component={TargetSessionRoute} />
+      </Show>
+      <Show when={!settings.general.newLayoutDesigns()}>
+        <Route path="/builder" component={PromptBuilder} />
       </Show>
       <Route path="/new-session" component={DraftRoute} />
     </>

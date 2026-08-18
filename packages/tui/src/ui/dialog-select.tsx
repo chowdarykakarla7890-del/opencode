@@ -19,6 +19,7 @@ import { Locale } from "../util/locale"
 import { getScrollAcceleration } from "../util/scroll"
 import { useTuiConfig } from "../config"
 import { formatKeyBindings, useBindings, useKeymapSelector } from "../keymap"
+import { useStudioPresentation } from "./studio"
 
 export interface DialogSelectProps<T> {
   title: string
@@ -84,6 +85,7 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
 
   const dialog = useDialog()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const tuiConfig = useTuiConfig()
   const scrollAcceleration = createMemo(() => getScrollAcceleration(tuiConfig))
 
@@ -540,11 +542,13 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
     return (
       <box
         flexDirection="row"
-        backgroundColor={active() ? theme.primary : RGBA.fromInts(0, 0, 0, 0)}
+        backgroundColor={
+          active() ? (studio.enabled() ? theme.backgroundElement : theme.primary) : RGBA.fromInts(0, 0, 0, 0)
+        }
         onMouseUp={() => triggerAction(item)}
       >
         <text
-          fg={disabled() ? theme.textMuted : active() ? fg : theme.text}
+          fg={disabled() ? theme.textMuted : active() && !studio.enabled() ? fg : theme.text}
           attributes={active() ? TextAttributes.BOLD : undefined}
         >
           {item.title}
@@ -557,10 +561,15 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
   return (
     <box gap={1} paddingBottom={1} flexGrow={1}>
       <box paddingLeft={4} paddingRight={4}>
-        <box flexDirection="row" justifyContent="space-between">
+        <box
+          flexDirection="row"
+          justifyContent="space-between"
+          border={studio.enabled() ? ["bottom"] : undefined}
+          borderColor={studio.enabled() ? theme.borderSubtle : undefined}
+        >
           {props.titleView ?? (
             <text fg={theme.text} attributes={TextAttributes.BOLD}>
-              {props.title}
+              {studio.enabled() ? props.title.toUpperCase() : props.title}
             </text>
           )}
           <text fg={theme.textMuted} onMouseUp={() => dialog.clear()}>
@@ -673,7 +682,9 @@ export function DialogSelect<T>(props: DialogSelectProps<T>) {
                               active()
                                 ? actionFocused()
                                   ? theme.backgroundElement
-                                  : (option.bg ?? theme.primary)
+                                  : studio.enabled()
+                                    ? theme.backgroundElement
+                                    : (option.bg ?? theme.primary)
                                 : RGBA.fromInts(0, 0, 0, 0)
                             }
                           >
@@ -743,9 +754,10 @@ function Option(props: {
   onMouseOver?: () => void
 }) {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const fg = selectedForeground(theme)
   const text = createMemo(() => {
-    if (props.active && !props.muted) return fg
+    if (props.active && !props.muted) return studio.enabled() ? theme.text : fg
     if (props.muted && (props.active || props.current)) return theme.textMuted
     if (props.current) return theme.primary
     return theme.text

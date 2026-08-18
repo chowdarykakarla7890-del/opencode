@@ -79,9 +79,10 @@ import { collapseToolOutput } from "../../util/collapse-tool-output"
 import { usePluginRuntime } from "../../plugin/runtime"
 import { DialogRetryAction } from "../../component/dialog-retry-action"
 import { getRevertDiffFiles } from "../../util/revert-diff"
-import { OPENCODE_BASE_MODE, useBindings, useCommandShortcut, useOpencodeKeymap } from "../../keymap"
+import { CODETUTOR_BASE_MODE, useBindings, useCommandShortcut, useOpencodeKeymap } from "../../keymap"
 import { usePathFormatter } from "../../context/path-format"
 import { LocationProvider } from "../../context/location"
+import { studioBorder, StudioSectionLabel, StudioStatusChip, useStudioPresentation } from "../../ui/studio"
 
 addDefaultParsers(parsers.parsers)
 
@@ -192,6 +193,7 @@ export function Session() {
   const tuiConfig = useTuiConfig()
   const kv = useKV()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const promptRef = usePromptRef()
   const session = createMemo(() => sync.session.get(route.sessionID))
   const location = createMemo(() => {
@@ -1109,12 +1111,12 @@ export function Session() {
   }))
 
   useBindings(() => ({
-    mode: OPENCODE_BASE_MODE,
+    mode: CODETUTOR_BASE_MODE,
     bindings: tuiConfig.keybinds.gather("session", sessionBindingCommands),
   }))
 
   useBindings(() => ({
-    mode: OPENCODE_BASE_MODE,
+    mode: CODETUTOR_BASE_MODE,
     enabled: foregroundTasks().length > 0,
     priority: 1,
     bindings: tuiConfig.keybinds.get("session.background"),
@@ -1178,6 +1180,10 @@ export function Session() {
         <box flexDirection="row" flexGrow={1} minHeight={0}>
           <box flexGrow={1} minHeight={0} paddingBottom={1} paddingLeft={2} paddingRight={2} gap={1}>
             <Show when={session()}>
+              <StudioSectionLabel
+                label="Session transcript"
+                right={<StudioStatusChip label={session()?.title ?? "session"} tone="active" />}
+              />
               <scrollbox
                 ref={(r) => (scroll = r)}
                 viewportOptions={{
@@ -1384,6 +1390,7 @@ function UserMessage(props: {
   })
   const files = createMemo(() => props.parts.flatMap((x) => (x.type === "file" ? [x] : [])))
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const [hover, setHover] = createSignal(false)
   const queued = createMemo(() => props.pending !== undefined && props.index > props.pending)
   const color = createMemo(() => local.agent.color(props.message.agent))
@@ -1398,9 +1405,9 @@ function UserMessage(props: {
         <box
           id={props.message.id}
           ref={(el: BoxRenderable) => alwaysSeparate.add(el)}
-          border={["left"]}
-          borderColor={color()}
-          customBorderChars={SplitBorder.customBorderChars}
+          border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left"]}
+          borderColor={studio.enabled() ? theme.primary : color()}
+          customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
           marginTop={props.index === 0 ? 0 : 1}
         >
           <box
@@ -1417,6 +1424,7 @@ function UserMessage(props: {
             backgroundColor={hover() ? theme.backgroundElement : theme.backgroundPanel}
             flexShrink={0}
           >
+            <StudioSectionLabel label="You" />
             <text fg={theme.text}>{text()}</text>
             <Show when={files().length}>
               <box flexDirection="row" paddingBottom={metadataVisible() ? 1 : 0} paddingTop={1} gap={1} flexWrap="wrap">
@@ -1471,6 +1479,7 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
   const ctx = use()
   const local = useLocal()
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const sync = useSync()
   const messages = createMemo(() => sync.data.message[props.message.sessionID] ?? [])
   const model = createMemo(() => Model.name(ctx.providers(), props.message.providerID, props.message.modelID))
@@ -1492,6 +1501,14 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
 
   return (
     <>
+      <Show when={studio.enabled() && props.parts.length > 0}>
+        <box marginTop={1} paddingLeft={1} paddingRight={1} border={["bottom"]} borderColor={theme.borderSubtle}>
+          <StudioSectionLabel
+            label={`Tutor // ${Locale.titlecase(props.message.mode)}`}
+            right={<text fg={theme.textMuted}>{model()}</text>}
+          />
+        </box>
+      </Show>
       <For each={props.parts}>
         {(part, index) => {
           const component = createMemo(() => PART_MAPPING[part.type as keyof typeof PART_MAPPING])
@@ -1586,6 +1603,7 @@ const INLINE_TOOL_ICON_WIDTH = 2
 
 function ReasoningPart(props: { last: boolean; part: ReasoningPart; message: AssistantMessage }) {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const ctx = use()
   // Collapsed by default in hide mode: a single line throughout, so the
   // layout never shifts. Click to open the full markdown block, click to close.
@@ -1619,6 +1637,11 @@ function ReasoningPart(props: { last: boolean; part: ReasoningPart; message: Ass
         marginTop={1}
         flexDirection="column"
         flexShrink={0}
+        border={studio.enabled() ? ["left"] : undefined}
+        borderColor={studio.enabled() ? theme.warning : undefined}
+        backgroundColor={studio.enabled() ? theme.backgroundPanel : undefined}
+        paddingTop={studio.enabled() ? 1 : 0}
+        paddingBottom={studio.enabled() ? 1 : 0}
       >
         <box onMouseUp={toggle}>
           <ReasoningHeader
@@ -1694,9 +1717,21 @@ function ReasoningHeader(props: {
 function TextPart(props: { last: boolean; part: TextPart; message: AssistantMessage }) {
   const ctx = use()
   const { theme, syntax } = useTheme()
+  const studio = useStudioPresentation()
   return (
     <Show when={props.part.text.trim()}>
-      <box ref={(el: BoxRenderable) => alwaysSeparate.add(el)} paddingLeft={3} marginTop={1} flexShrink={0}>
+      <box
+        ref={(el: BoxRenderable) => alwaysSeparate.add(el)}
+        paddingLeft={studio.enabled() ? 2 : 3}
+        paddingRight={studio.enabled() ? 1 : 0}
+        paddingTop={studio.enabled() ? 1 : 0}
+        paddingBottom={studio.enabled() ? 1 : 0}
+        marginTop={1}
+        flexShrink={0}
+        border={studio.enabled() ? ["left"] : undefined}
+        borderColor={studio.enabled() ? theme.border : undefined}
+        backgroundColor={studio.enabled() ? theme.backgroundPanel : undefined}
+      >
         <markdown
           syntaxStyle={syntax()}
           streaming={true}
@@ -1855,6 +1890,7 @@ function InlineTool(props: {
   onClick?: () => void
 }) {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const ctx = use()
   const sync = useSync()
   const renderer = useRenderer()
@@ -1888,7 +1924,7 @@ function InlineTool(props: {
     return theme.text
   })
 
-  return (
+  const row = () => (
     <InlineToolRow
       icon={props.icon}
       iconColor={props.iconColor}
@@ -1916,6 +1952,19 @@ function InlineTool(props: {
     >
       {props.children}
     </InlineToolRow>
+  )
+
+  return (
+    <Show when={studio.enabled()} fallback={row()}>
+      <box
+        backgroundColor={theme.backgroundPanel}
+        border={["left"]}
+        borderColor={failed() ? theme.error : theme.borderSubtle}
+        paddingRight={1}
+      >
+        {row()}
+      </box>
+    </Show>
   )
 }
 
@@ -2007,21 +2056,22 @@ function BlockTool(props: {
   spinner?: boolean
 }) {
   const { theme } = useTheme()
+  const studio = useStudioPresentation()
   const renderer = useRenderer()
   const [hover, setHover] = createSignal(false)
   const error = createMemo(() => (props.part?.state.status === "error" ? props.part.state.error : undefined))
   return (
     <box
       ref={(el: BoxRenderable) => alwaysSeparate.add(el)}
-      border={["left"]}
+      border={studio.enabled() ? ["top", "bottom", "left", "right"] : ["left"]}
       paddingTop={1}
       paddingBottom={1}
       paddingLeft={2}
       marginTop={1}
       gap={1}
       backgroundColor={hover() ? theme.backgroundMenu : theme.backgroundPanel}
-      customBorderChars={SplitBorder.customBorderChars}
-      borderColor={theme.background}
+      customBorderChars={studio.enabled() ? studioBorder : SplitBorder.customBorderChars}
+      borderColor={studio.enabled() ? theme.border : theme.background}
       onMouseOver={() => props.onClick && setHover(true)}
       onMouseOut={() => setHover(false)}
       onMouseUp={() => {

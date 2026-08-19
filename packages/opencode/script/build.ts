@@ -128,6 +128,15 @@ if (!skipInstall) {
   await $`bun install --os="*" --cpu="*" @ff-labs/fff-bun@${pkg.dependencies["@ff-labs/fff-bun"]}`
 }
 for (const item of targets) {
+  const target = [
+    "bun",
+    item.os === "win32" ? "windows" : item.os,
+    item.arch,
+    item.avx2 === false ? "baseline" : undefined,
+    item.abi === undefined ? undefined : item.abi,
+  ]
+    .filter(Boolean)
+    .join("-")
   // The original Linux x64 package name was never reserved. Keep the
   // compatibility package name while shipping the glibc build through it;
   // the baseline-musl package remains the native musl fallback.
@@ -165,7 +174,7 @@ for (const item of targets) {
       autoloadDotenv: false,
       autoloadTsconfig: true,
       autoloadPackageJson: true,
-      target: name.replace(pkg.name, "bun") as any,
+      target: target as any,
       outfile: `dist/${name}/bin/${pkg.name}`,
       execArgv: [`--user-agent=codetutor/${Script.version}`, "--use-system-ca", "--"],
       windows: {},

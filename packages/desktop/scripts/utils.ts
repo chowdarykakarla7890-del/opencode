@@ -41,7 +41,7 @@ export const CLI_BINARIES: Array<{ rustTarget: string; package: string; os: stri
   },
   {
     rustTarget: "x86_64-unknown-linux-gnu",
-    package: "codetutor-linux-x64",
+    package: "codetutor-linux-x64-musl",
     os: "linux",
     cpu: "x64",
   },

@@ -965,8 +965,12 @@ export function AccountGate(props: ParentProps) {
   const [local, setLocal] = createSignal(false)
   const platform = usePlatform()
   const supabase = client(platform.platform === "desktop" ? platform.secureStorage : undefined)
-  if (local()) return props.children
-  if (!supabase) return <AccountSetupRequired onLocal={() => setLocal(true)} />
+  if (!supabase)
+    return (
+      <Show when={!local()} fallback={props.children}>
+        <AccountSetupRequired onLocal={() => setLocal(true)} />
+      </Show>
+    )
 
   const [session, setSession] = createSignal<Session | null>(null)
   const [offline, setOffline] = createSignal(false)
@@ -1015,31 +1019,30 @@ export function AccountGate(props: ParentProps) {
   })
 
   return (
-    <Show when={ready()} fallback={<main class="min-h-screen bg-background-base" />}>
-      <Show
-        when={session()}
-        fallback={
-          <Show when={offline()} fallback={<SignIn supabase={supabase} onLocal={() => setLocal(true)} />}>
-            {props.children}
-          </Show>
-        }
-        keyed
-      >
-        {(active) => (
-          <Show
-            when={location.pathname === "/device"}
-            fallback={
-              <Show
-                when={location.pathname === "/account"}
-                fallback={props.children}
-              >
-                <AccountHome supabase={supabase} session={active} />
-              </Show>
-            }
-          >
-            <DeviceApproval session={active} />
-          </Show>
-        )}
+    <Show when={!local()} fallback={props.children}>
+      <Show when={ready()} fallback={<main class="min-h-screen bg-background-base" />}>
+        <Show
+          when={session()}
+          fallback={
+            <Show when={offline()} fallback={<SignIn supabase={supabase} onLocal={() => setLocal(true)} />}>
+              {props.children}
+            </Show>
+          }
+          keyed
+        >
+          {(active) => (
+            <Show
+              when={location.pathname === "/device"}
+              fallback={
+                <Show when={location.pathname === "/account"} fallback={props.children}>
+                  <AccountHome supabase={supabase} session={active} />
+                </Show>
+              }
+            >
+              <DeviceApproval session={active} />
+            </Show>
+          )}
+        </Show>
       </Show>
     </Show>
   )

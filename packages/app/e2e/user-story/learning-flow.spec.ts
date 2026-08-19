@@ -81,7 +81,11 @@ test("starts, checks, completes, and resets a lesson from the Learning dashboard
   })
 
   await page.goto("/learning")
-  await expect(page.getByRole("heading", { name: "Learn with CodeTutor" })).toBeVisible()
+  const learningHeading = page.getByRole("heading", { name: "Learn with CodeTutor" })
+  const localLearning = page.getByRole("button", { name: "Continue with local learning" })
+  await expect(learningHeading.or(localLearning)).toBeVisible()
+  if (await localLearning.isVisible()) await localLearning.click()
+  await expect(learningHeading).toBeVisible()
   await expect(page.getByRole("heading", { name: "Values and Variables" })).toBeVisible()
   await expect(page.getByText("0/1", { exact: true })).toBeVisible()
 

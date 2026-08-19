@@ -4,6 +4,7 @@ const availableWithoutAccount = new Set([
   "completion",
   "db",
   "debug",
+  "generate",
   "models",
   "mcp",
   "providers",

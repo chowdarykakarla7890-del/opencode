@@ -13,7 +13,10 @@ describe("CLI account rollout", () => {
   test("gates direct AI operations by default", () => {
     expect(required(["."])).toBeTrue()
     expect(required(["run", "teach me"])).toBeTrue()
-    expect(required(["generate"])).toBeTrue()
+  })
+
+  test("allows non-AI OpenAPI generation without an account", () => {
+    expect(required(["generate"])).toBeFalse()
   })
 
   test("keeps login, setup, recovery, and help available", () => {

@@ -62,15 +62,6 @@ const allTargets: {
   },
   {
     os: "linux",
-    arch: "x64",
-  },
-  {
-    os: "linux",
-    arch: "x64",
-    avx2: false,
-  },
-  {
-    os: "linux",
     arch: "arm64",
     abi: "musl",
   },
@@ -105,11 +96,6 @@ const allTargets: {
   {
     os: "win32",
     arch: "x64",
-  },
-  {
-    os: "win32",
-    arch: "x64",
-    avx2: false,
   },
 ]
 

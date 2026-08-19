@@ -43,7 +43,7 @@ jobs:
         working-directory: packages/sdk/js
       - run: bun run typecheck
         working-directory: packages/plugin
-      - run: bun test test/cli/learning.test.ts test/cli/help/help-snapshots.test.ts test/installation/index.test.ts
+      - run: bun test test/cli/learning.test.ts test/cli/help/help-snapshots.test.ts test/installation/index.test.ts test/installation/keyring-compiled.test.ts
         working-directory: packages/opencode
       - run: bun test
         working-directory: packages/desktop

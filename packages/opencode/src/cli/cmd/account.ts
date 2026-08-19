@@ -6,6 +6,7 @@ import { AccountID, OrgID, PollExpired, type PollResult, type AccountError } fro
 import { effectCmd } from "../effect-cmd"
 import * as Prompt from "../effect/prompt"
 import open from "open"
+import { AccountStrict } from "@/account/strict"
 
 const openBrowser = (url: string) => Effect.promise(() => open(url).catch(() => undefined))
 
@@ -18,6 +19,7 @@ const activeSuffix = (isActive: boolean) => (isActive ? dim(" (active)") : "")
 export const defaultAccountUrl = "https://codetutor-cloud.vercel.app"
 
 export const accountUrl = () => process.env.CODETUTOR_ACCOUNT_URL?.trim() || defaultAccountUrl
+export const accountAppUrl = () => process.env.CODETUTOR_APP_URL?.trim() || "https://codetutor-app-red.vercel.app"
 
 export const formatAccountLabel = (account: { email: string; url: string }, isActive: boolean) =>
   `${account.email} ${dim(account.url)}${activeSuffix(isActive)}`
@@ -40,11 +42,11 @@ const isActiveOrgChoice = (
   choice: { accountID: AccountID; orgID: OrgID },
 ) => Option.isSome(active) && active.value.id === choice.accountID && active.value.active_org_id === choice.orgID
 
-const loginEffect = Effect.fn("login")(function* (url: string) {
+export const loginEffect = Effect.fn("login")(function* (url: string, strict = false) {
   const service = yield* Account.Service
 
   yield* Prompt.intro("Log in")
-  const login = yield* service.login(url)
+  const login = yield* service.login(url, strict)
 
   yield* Prompt.log.info("Go to: " + login.url)
   yield* Prompt.log.info("Enter code: " + login.user)
@@ -188,18 +190,121 @@ const statusEffect = Effect.fn("status")(function* () {
   }
 })
 
+const profileEffect = Effect.fn("profile")(function* () {
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  const result = yield* service.profile(account.id)
+  yield* println(result.profile.display_name ?? result.email)
+  yield* println(`Email: ${result.email}`)
+  yield* println(`Learner level: ${result.profile.learner_level}`)
+  yield* println(`Teaching style: ${result.profile.teaching_style} · Pace: ${result.profile.pace}`)
+  if (result.profile.languages.length) yield* println(`Languages: ${result.profile.languages.join(", ")}`)
+  if (result.profile.frameworks.length) yield* println(`Frameworks: ${result.profile.frameworks.join(", ")}`)
+  if (result.profile.primary_model) yield* println(`Model: ${result.profile.primary_model}`)
+})
+
+const sessionsEffect = Effect.fn("sessions")(function* () {
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  const result = yield* service.sessions(account.id)
+  for (const session of result.sessions) {
+    const current = session.id === result.current_session_id ? " (current)" : ""
+    const revoked = session.revoked_at ? ` · revoked ${session.revoked_at}` : ""
+    yield* println(
+      `${session.id}${current} · ${session.device_name ?? session.client_type} · ${session.platform ?? "unknown"} · ${session.last_seen_at}${revoked}`,
+    )
+  }
+  if (!result.sessions.length) yield* println("No account sessions")
+})
+
+const revokeSessionEffect = Effect.fn("revokeSession")(function* (sessionID?: string, all?: boolean) {
+  if (!sessionID && !all) return yield* Effect.fail(new Error("Provide a session ID or use --all."))
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  const revoked = yield* service.revokeSession(account.id, all ? undefined : sessionID)
+  yield* Prompt.outro(`Revoked ${revoked.length} session${revoked.length === 1 ? "" : "s"}`)
+})
+
+const activeAccount = Effect.fn("activeAccount")(function* () {
+  const service = yield* Account.Service
+  const active = yield* service.active()
+  if (Option.isNone(active)) return yield* Effect.fail(new Error("Not logged in. Run codetutor account login first."))
+  return active.value
+})
+
+const planEffect = Effect.fn("plan")(function* () {
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  const entitlement = yield* service.entitlement(account.id)
+  yield* println(`${entitlement.allowance.name} · $${entitlement.allowance.price_monthly}/month`)
+  yield* println(`Included AI credit: $${entitlement.allowance.limits.spend_monthly_usd.toFixed(2)}`)
+  yield* println(`Billing period: ${entitlement.period.start} to ${entitlement.period.end}`)
+  yield* println(`Top-up balance: $${(entitlement.credit.remainingNanos / 1_000_000_000).toFixed(2)}`)
+})
+
+const plansEffect = Effect.fn("plans")(function* () {
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  for (const plan of yield* service.plans(account.id)) {
+    yield* println(
+      `${plan.name.padEnd(8)} $${String(plan.price_monthly).padEnd(2)}/month  ` +
+        `$${plan.limits.spend_monthly_usd.toFixed(2)} AI credit  ${plan.limits.requests_monthly.toLocaleString()} requests`,
+    )
+  }
+})
+
+const usageEffect = Effect.fn("usage")(function* () {
+  const service = yield* Account.Service
+  const account = yield* activeAccount()
+  const usage = yield* service.usage(account.id)
+  yield* println(`${usage.plan.name} usage · ${usage.period_start} to ${usage.period_end}`)
+  yield* println(`Requests: ${usage.usage.request_count.toLocaleString()} used · ${usage.remaining.requests.toLocaleString()} remaining`)
+  yield* println(`Tokens: ${(usage.usage.input_tokens + usage.usage.output_tokens).toLocaleString()} used · ${usage.remaining.tokens.toLocaleString()} remaining`)
+  yield* println(`Included AI credit: $${usage.usage.spend_usd.toFixed(4)} used · $${usage.remaining.spend_usd.toFixed(2)} remaining`)
+  yield* println(`Top-up balance: $${(usage.credit.remainingNanos / 1_000_000_000).toFixed(2)}`)
+})
+
+const upgradeEffect = Effect.fn("upgrade")(function* (plan: "starter" | "pro") {
+  yield* activeAccount()
+  yield* openBrowser(`${accountAppUrl()}/account?action=upgrade&plan=${plan}`)
+  yield* Prompt.outro(`Opened CodeTutor account to upgrade to ${plan}`)
+})
+
+const topupEffect = Effect.fn("topup")(function* (pack: "5" | "10" | "25") {
+  yield* activeAccount()
+  yield* openBrowser(`${accountAppUrl()}/account?action=topup&pack=${pack}`)
+  yield* Prompt.outro(`Opened CodeTutor account to buy $${pack} AI credit`)
+})
+
+const billingEffect = Effect.fn("billing")(function* () {
+  yield* activeAccount()
+  yield* openBrowser(`${accountAppUrl()}/account?action=billing`)
+  yield* Prompt.outro("Opened CodeTutor billing")
+})
+
+const accountActionEffect = Effect.fn("accountAction")(function* (action: string) {
+  yield* activeAccount()
+  yield* openBrowser(`${accountAppUrl()}/account?action=${action}`)
+  yield* Prompt.outro("Opened CodeTutor account")
+})
+
 export const LoginCommand = effectCmd({
   command: "login [url]",
   describe: false,
   instance: false,
   builder: (yargs) =>
-    yargs.positional("url", {
-      describe: "server URL",
-      type: "string",
-    }),
+    yargs
+      .positional("url", {
+        describe: "server URL",
+        type: "string",
+      })
+      .option("strict", {
+        describe: "require approval again after 24 hours or four idle hours",
+        type: "boolean",
+      }),
   handler: Effect.fn("Cli.account.login")(function* (args) {
     UI.empty()
-    yield* Effect.orDie(loginEffect(args.url ?? accountUrl()))
+    yield* Effect.orDie(loginEffect(args.url ?? accountUrl(), args.strict))
   }),
 })
 
@@ -258,6 +363,135 @@ export const StatusCommand = effectCmd({
   }),
 })
 
+export const PlanCommand = effectCmd({
+  command: "plan",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.plan")(function* () {
+    UI.empty()
+    yield* Effect.orDie(planEffect())
+  }),
+})
+
+export const PlansCommand = effectCmd({
+  command: "plans",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.plans")(function* () {
+    UI.empty()
+    yield* Effect.orDie(plansEffect())
+  }),
+})
+
+export const UsageCommand = effectCmd({
+  command: "usage",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.usage")(function* () {
+    UI.empty()
+    yield* Effect.orDie(usageEffect())
+  }),
+})
+
+export const UpgradeCommand = effectCmd({
+  command: "upgrade <plan>",
+  describe: false,
+  instance: false,
+  builder: (yargs) => yargs.positional("plan", { type: "string", choices: ["starter", "pro"] as const }),
+  handler: Effect.fn("Cli.account.upgrade")(function* (args) {
+    UI.empty()
+    yield* Effect.orDie(upgradeEffect(args.plan))
+  }),
+})
+
+export const TopupCommand = effectCmd({
+  command: "topup <pack>",
+  describe: false,
+  instance: false,
+  builder: (yargs) => yargs.positional("pack", { type: "string", choices: ["5", "10", "25"] as const }),
+  handler: Effect.fn("Cli.account.topup")(function* (args) {
+    UI.empty()
+    yield* Effect.orDie(topupEffect(args.pack))
+  }),
+})
+
+export const BillingCommand = effectCmd({
+  command: "billing",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.billing")(function* () {
+    UI.empty()
+    yield* Effect.orDie(billingEffect())
+  }),
+})
+
+export const ProfileCommand = effectCmd({
+  command: "profile",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.profile")(function* () {
+    UI.empty()
+    yield* Effect.orDie(profileEffect())
+  }),
+})
+
+export const SessionsCommand = effectCmd({
+  command: "sessions",
+  describe: false,
+  instance: false,
+  handler: Effect.fn("Cli.account.sessions")(function* () {
+    UI.empty()
+    yield* Effect.orDie(sessionsEffect())
+  }),
+})
+
+export const RevokeSessionCommand = effectCmd({
+  command: "revoke-session [session]",
+  describe: false,
+  instance: false,
+  builder: (yargs) =>
+    yargs
+      .positional("session", { type: "string", describe: "session ID to revoke" })
+      .option("all", { type: "boolean", describe: "revoke every active session" }),
+  handler: Effect.fn("Cli.account.revokeSession")(function* (args) {
+    UI.empty()
+    yield* Effect.orDie(revokeSessionEffect(args.session, args.all))
+  }),
+})
+
+export const StrictModeCommand = effectCmd({
+  command: "strict-mode [state]",
+  describe: false,
+  instance: false,
+  builder: (yargs) => yargs.positional("state", { type: "string", choices: ["on", "off"] as const }),
+  handler: Effect.fn("Cli.account.strictMode")(function* (args) {
+    const current = yield* AccountStrict.enabled()
+    if (!args.state) {
+      UI.println(`Strict login mode is ${current ? "on" : "off"}.`)
+      return
+    }
+    yield* AccountStrict.set(args.state === "on")
+    UI.println(`Strict login mode is now ${args.state}.`)
+  }),
+})
+
+const browserAction = (command: string, action: string) =>
+  effectCmd({
+    command,
+    describe: false,
+    instance: false,
+    handler: Effect.fn(`Cli.account.${action}`)(function* () {
+      UI.empty()
+      yield* Effect.orDie(accountActionEffect(action))
+    }),
+  })
+
+export const ServiceKeysCommand = browserAction("service-keys", "service-keys")
+export const CreateServiceKeyCommand = browserAction("service-key-create", "service-key-create")
+export const RevokeServiceKeyCommand = browserAction("service-key-revoke <key>", "service-key-revoke")
+export const ExportAccountCommand = browserAction("export", "export")
+export const DeleteAccountCommand = browserAction("delete", "delete")
+
 export const AccountCommand = cmd({
   command: "account",
   describe: "manage your CodeTutor account",
@@ -276,17 +510,24 @@ export const AccountCommand = cmd({
         describe: "show account status",
       })
       .command({
-        ...SwitchCommand,
-        describe: "switch active org",
-      })
-      .command({
-        ...OrgsCommand,
-        describe: "list orgs",
-      })
-      .command({
         ...OpenCommand,
         describe: "open the active CodeTutor account",
       })
+      .command({ ...PlanCommand, describe: "show the active subscription plan" })
+      .command({ ...PlansCommand, describe: "list CodeTutor subscription plans" })
+      .command({ ...UsageCommand, describe: "show managed AI usage and credit" })
+      .command({ ...UpgradeCommand, describe: "upgrade or change the subscription plan" })
+      .command({ ...TopupCommand, describe: "buy prepaid managed AI credit" })
+      .command({ ...BillingCommand, describe: "open the CodeTutor billing portal" })
+      .command({ ...ProfileCommand, describe: "show your tutor profile" })
+      .command({ ...SessionsCommand, describe: "list signed-in devices and sessions" })
+      .command({ ...RevokeSessionCommand, describe: "revoke a device session" })
+      .command({ ...StrictModeCommand, describe: "require browser approval whenever the interactive CLI starts" })
+      .command({ ...ServiceKeysCommand, describe: "list scoped service keys" })
+      .command({ ...CreateServiceKeyCommand, describe: "create a scoped service key" })
+      .command({ ...RevokeServiceKeyCommand, describe: "revoke a scoped service key" })
+      .command({ ...ExportAccountCommand, describe: "export your CodeTutor account data" })
+      .command({ ...DeleteAccountCommand, describe: "schedule account deletion" })
       .demandCommand(),
   async handler() {},
 })

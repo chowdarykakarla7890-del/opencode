@@ -85,6 +85,8 @@ import * as TuiAudio from "./audio"
 import { win32DisableProcessedInput, win32FlushInputBuffer } from "./terminal-win32"
 import { destroyRenderer } from "./util/renderer"
 import { cliErrorMessage, errorFormat } from "./util/error"
+import type { TuiAccountAdapter } from "./account"
+import { DialogAccount } from "./component/dialog-account"
 
 registerOpencodeSpinner()
 
@@ -148,6 +150,7 @@ export type TuiInput = {
   headers?: RequestInit["headers"]
   events?: EventSource
   pluginHost: TuiPluginHost
+  account?: TuiAccountAdapter
 }
 
 function errorMessage(error: unknown) {
@@ -317,6 +320,7 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
                                                                     <App
                                                                       onSnapshot={input.onSnapshot}
                                                                       pluginHost={input.pluginHost}
+                                                                      account={input.account}
                                                                     />
                                                                   </LocationProvider>
                                                                 </EditorContextProvider>
@@ -361,7 +365,11 @@ export const run = Effect.fn("Tui.run")(function* (input: TuiInput) {
   })
 })
 
-function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPluginHost }) {
+function App(props: {
+  onSnapshot?: () => Promise<string[]>
+  pluginHost: TuiPluginHost
+  account?: TuiAccountAdapter
+}) {
   const startup = useTuiStartup()
   const tuiConfig = useTuiConfig()
   const route = useRoute()
@@ -542,6 +550,10 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       (isEmpty, wasEmpty) => {
         // only trigger when we transition into an empty-provider state
         if (!isEmpty || wasEmpty) return
+        if (props.account) {
+          dialog.replace(() => <DialogAccount account={props.account!} />)
+          return
+        }
         dialog.replace(() => <DialogProviderList />)
       },
     ),
@@ -736,13 +748,13 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       },
       {
         name: "provider.connect",
-        title: "Connect provider",
+        title: "Choose managed model",
         suggested: !connected(),
         slashName: "connect",
         run: () => {
-          dialog.replace(() => <DialogProviderList />)
+          dialog.replace(() => <DialogModel />)
         },
-        category: "Provider",
+        category: "Agent",
       },
       {
         name: "opencode.status",
@@ -752,6 +764,21 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
           dialog.replace(() => <DialogStatus />)
         },
         category: "System",
+      },
+      {
+        name: "codetutor.account",
+        title: "Account and usage",
+        slashName: "account",
+        run: () => {
+          if (!props.account) {
+            dialog.replace(() => (
+              <DialogAlert title="Account unavailable" message="Run codetutor account from your terminal." />
+            ))
+            return
+          }
+          dialog.replace(() => <DialogAccount account={props.account!} />)
+        },
+        category: "Account",
       },
       {
         name: "opencode.debug",
@@ -930,7 +957,7 @@ function App(props: { onSnapshot?: () => Promise<string[]>; pluginHost: TuiPlugi
       {
         name: "permission.mode",
         title:
-          local.permission.mode === "auto" ? "Disable auto-approve permissions" : "Enable auto-approve permissions",
+          local.permission.mode === "auto" ? "Disable safe auto-approval" : "Enable safe auto-approval",
         category: "System",
         run: () => {
           local.permission.toggle()

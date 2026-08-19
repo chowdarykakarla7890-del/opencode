@@ -1,5 +1,5 @@
 import { createSimpleContext } from "@opencode-ai/ui/context"
-import { type Accessor, batch, createMemo } from "solid-js"
+import { type Accessor, batch, createMemo, onMount } from "solid-js"
 import { createStore, type SetStoreFunction, type Store } from "solid-js/store"
 import { Persist, persisted } from "@/utils/persist"
 import { pathKey } from "@/utils/path-key"
@@ -290,7 +290,11 @@ export const { use: useServer, provider: ServerProvider } = createSimpleContext(
     function add(input: ServerConnection.Http) {
       const url_ = normalizeServerUrl(input.http.url)
       if (!url_) return
-      const conn: ServerConnection.Http = { ...input, authToken: undefined, http: { ...input.http, url: url_ } }
+      const conn: ServerConnection.Http = {
+        ...input,
+        authToken: input.http.username === "pair" ? true : undefined,
+        http: { ...input.http, url: url_ },
+      }
       return batch(() => {
         const existing = store.list.findIndex((x) => url(x) === url_)
         if (existing !== -1) {
@@ -302,6 +306,16 @@ export const { use: useServer, provider: ServerProvider } = createSimpleContext(
         return conn
       })
     }
+
+    onMount(() => {
+      void ready.promise?.then(() => {
+        props.servers
+          ?.filter((server): server is ServerConnection.Http => server.type === "http" && server.authToken === true)
+          .forEach((server) => {
+            add(server)
+          })
+      })
+    })
 
     function remove(key: ServerConnection.Key) {
       const next = nextServerAfterRemoval(allServers(), key, props.defaultServer)

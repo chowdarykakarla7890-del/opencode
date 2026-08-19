@@ -7,6 +7,7 @@ import { Database } from "@opencode-ai/core/database/database"
 import { AccountStateTable, AccountTable } from "@opencode-ai/core/account/sql"
 import { AccessToken, AccountID, AccountRepoError, Info, OrgID, RefreshToken } from "./schema"
 import { normalizeServerUrl } from "./url"
+import { reference, read, remove as removeCredential, write } from "./vault"
 
 export type AccountRow = (typeof AccountTable)["$inferSelect"]
 
@@ -94,35 +95,55 @@ const layer = Layer.effect(
             yield* tx.delete(AccountTable).where(eq(AccountTable.id, accountID)).run()
           }),
         ),
-      ).pipe(Effect.asVoid),
+      ).pipe(Effect.andThen(removeCredential(accountID)), Effect.asVoid),
     )
 
     const use = Effect.fn("AccountRepo.use")((accountID: AccountID, orgID: Option.Option<OrgID>) =>
       query(state(accountID, orgID)).pipe(Effect.asVoid),
     )
 
-    const getRow = Effect.fn("AccountRepo.getRow")((accountID: AccountID) =>
-      query(db.select().from(AccountTable).where(eq(AccountTable.id, accountID)).get()).pipe(
-        Effect.map(Option.fromNullishOr),
-      ),
-    )
+    const getRow = Effect.fn("AccountRepo.getRow")(function* (accountID: AccountID) {
+      const row = yield* query(db.select().from(AccountTable).where(eq(AccountTable.id, accountID)).get())
+      if (!row) return Option.none<AccountRow>()
+      const stored = yield* read(accountID)
+      if (stored) return Option.some({ ...row, ...stored })
+      if (row.access_token.startsWith("vault:") || row.refresh_token.startsWith("vault:")) {
+        return yield* Effect.fail(
+          new AccountRepoError({ message: "Credentials are missing from the operating system vault. Sign in again." }),
+        )
+      }
+      yield* write(accountID, { access_token: row.access_token, refresh_token: row.refresh_token })
+      const vaultReference = reference(accountID)
+      yield* query(
+        db
+          .update(AccountTable)
+          .set({ access_token: AccessToken.make(vaultReference), refresh_token: RefreshToken.make(vaultReference) })
+          .where(eq(AccountTable.id, accountID))
+          .run(),
+      )
+      return Option.some(row)
+    })
 
-    const persistToken = Effect.fn("AccountRepo.persistToken")((input) =>
-      query(
+    const persistToken = Effect.fn("AccountRepo.persistToken")(function* (input) {
+      yield* write(input.accountID, { access_token: input.accessToken, refresh_token: input.refreshToken })
+      const vaultReference = reference(input.accountID)
+      yield* query(
         db
           .update(AccountTable)
           .set({
-            access_token: input.accessToken,
-            refresh_token: input.refreshToken,
+            access_token: AccessToken.make(vaultReference),
+            refresh_token: RefreshToken.make(vaultReference),
             token_expiry: Option.getOrNull(input.expiry),
           })
           .where(eq(AccountTable.id, input.accountID))
           .run(),
-      ).pipe(Effect.asVoid),
-    )
+      )
+    })
 
-    const persistAccount = Effect.fn("AccountRepo.persistAccount")((input) =>
-      query(
+    const persistAccount = Effect.fn("AccountRepo.persistAccount")(function* (input) {
+      yield* write(input.id, { access_token: input.accessToken, refresh_token: input.refreshToken })
+      const vaultReference = reference(input.id)
+      yield* query(
         db.transaction((tx) =>
           Effect.gen(function* () {
             const url = normalizeServerUrl(input.url)
@@ -133,8 +154,8 @@ const layer = Layer.effect(
                 id: input.id,
                 email: input.email,
                 url,
-                access_token: input.accessToken,
-                refresh_token: input.refreshToken,
+                access_token: AccessToken.make(vaultReference),
+                refresh_token: RefreshToken.make(vaultReference),
                 token_expiry: input.expiry,
               })
               .onConflictDoUpdate({
@@ -142,8 +163,8 @@ const layer = Layer.effect(
                 set: {
                   email: input.email,
                   url,
-                  access_token: input.accessToken,
-                  refresh_token: input.refreshToken,
+                  access_token: AccessToken.make(vaultReference),
+                  refresh_token: RefreshToken.make(vaultReference),
                   token_expiry: input.expiry,
                 },
               })
@@ -151,8 +172,8 @@ const layer = Layer.effect(
             yield* state(input.id, input.orgID)
           }),
         ),
-      ).pipe(Effect.asVoid),
-    )
+      )
+    })
 
     return Service.of({
       active,

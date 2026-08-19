@@ -65,6 +65,13 @@ type PlatformBase = {
   /** Storage mechanism, defaults to localStorage */
   storage?: (name?: string) => SyncStorage | AsyncStorage
 
+  /** OS-protected credential storage (desktop only). */
+  secureStorage?: {
+    getItem(key: string): Promise<string | null>
+    setItem(key: string, value: string): Promise<void>
+    removeItem(key: string): Promise<void>
+  }
+
   /** Prompt drafts, history, and their blobs. */
   draftStore?: DraftStore
 

@@ -279,6 +279,29 @@ const ask = Effect.fn("ShellTool.ask")(function* (ctx: Tool.Context, scan: Scan,
     })
   }
 
+  const sensitive = [
+    {
+      permission: "destructive",
+      match: /(?:^|[;&|]\s*)(?:rm\s+(?:-[^\s]*[rf][^\s]*\s+)|git\s+(?:reset\s+--hard|clean\s+-)|(?:del|erase|rmdir|rd)\s+|remove-item\b.*(?:-recurse|-force)|(?:drop|truncate)\s+(?:database|table)\b)/i,
+    },
+    {
+      permission: "elevated",
+      match: /(?:^|[;&|]\s*)(?:sudo|doas|runas)\b|start-process\b.*-verb\s+runas/i,
+    },
+    {
+      permission: "network",
+      match: /(?:^|[;&|]\s*)(?:curl|wget|ssh|scp|sftp|nc|ncat|telnet)\b/i,
+    },
+  ].filter((item) => item.match.test(input.command))
+  for (const item of sensitive) {
+    yield* ctx.ask({
+      permission: item.permission,
+      patterns: [input.command],
+      always: [],
+      metadata: { command: input.command },
+    })
+  }
+
   if (scan.patterns.size === 0) return
   yield* ctx.ask({
     permission: ShellID.ToolID,

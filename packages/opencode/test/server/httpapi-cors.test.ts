@@ -43,6 +43,26 @@ const it = testEffect(
 )
 
 describe("HttpApi CORS", () => {
+  it.live("requires local pairing for the hosted app even when server password is unset", () =>
+    Effect.gen(function* () {
+      const handler = HttpRouter.toWebHandler(
+        HttpApiApp.createRoutes().pipe(Layer.provide(ConfigProvider.layer(ConfigProvider.fromUnknown({})))),
+        { disableLogger: true },
+      ).handler
+      const response = yield* Effect.promise(() =>
+        handler(
+          new Request(new URL("/global/config", "http://localhost"), {
+            headers: { origin: "https://codetutor-app-red.vercel.app" },
+          }),
+          HttpApiApp.context,
+        ),
+      )
+
+      expect(response.status).toBe(401)
+      expect(response.headers.get("access-control-allow-origin")).toBe("https://codetutor-app-red.vercel.app")
+    }),
+  )
+
   it.live("allows browser preflight requests without credentials", () =>
     Effect.gen(function* () {
       const response = yield* HttpClientRequest.options(InstancePaths.path).pipe(

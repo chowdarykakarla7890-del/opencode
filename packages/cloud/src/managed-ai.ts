@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { aiGatewayToken } from "./env.js"
 import type { Plan } from "./plans.js"
+import { fallbackCatalog, type ModelCatalogEntry } from "./catalog.js"
 
 type Usage = {
   input: number
@@ -15,9 +16,14 @@ type ModelRate = {
   cachedInputNanos: number
 }
 
-const rates: Record<string, ModelRate> = {
-  "google/gemini-3.1-flash-lite": { inputNanos: 250, outputNanos: 1_500, cachedInputNanos: 30 },
-  "openai/gpt-5.4-mini": { inputNanos: 750, outputNanos: 4_500, cachedInputNanos: 75 },
+const rate = (model: string | ModelCatalogEntry): ModelRate | null => {
+  const info = typeof model === "string" ? fallbackCatalog().find((item) => item.id === model) : model
+  if (!info) return null
+  return {
+    inputNanos: Math.ceil(info.pricing.input * 1_000_000_000),
+    outputNanos: Math.ceil(info.pricing.output * 1_000_000_000),
+    cachedInputNanos: Math.ceil(info.pricing.cachedInput * 1_000_000_000),
+  }
 }
 
 const integer = (value: unknown) =>
@@ -47,44 +53,98 @@ export const usageFrom = (value: unknown): Usage | null => {
   }
 }
 
-export const requestCostNanos = (model: string, usage: Usage) => {
+export const requestCostNanos = (model: string | ModelCatalogEntry, usage: Usage) => {
+  const pricing = rate(model)
+  if (pricing && pricing.inputNanos === 0 && pricing.outputNanos === 0 && pricing.cachedInputNanos === 0) return 0
   if (usage.costNanos !== undefined) return usage.costNanos
-  const rate = rates[model]
-  if (!rate) return 0
+  if (!pricing) return 0
   return Math.ceil(
-    (usage.input - usage.cached) * rate.inputNanos +
-      usage.cached * rate.cachedInputNanos +
-      usage.output * rate.outputNanos,
+    (usage.input - usage.cached) * pricing.inputNanos +
+      usage.cached * pricing.cachedInputNanos +
+      usage.output * pricing.outputNanos,
   )
 }
 
-export const estimateRequest = (body: Record<string, unknown>, plan: Plan, model: string) => {
+export const estimateRequest = (body: Record<string, unknown>, plan: Plan, model: string | ModelCatalogEntry) => {
   const requested = integer(body.max_completion_tokens ?? body.max_tokens) || 4_096
-  const output = Math.min(requested, plan.maxOutputTokens)
+  const modelLimit = typeof model === "string" ? Number.MAX_SAFE_INTEGER : model.maxTokens
+  const output = Math.min(requested, plan.maxOutputTokens, modelLimit || plan.maxOutputTokens)
   const input = Math.ceil(JSON.stringify(body.messages ?? body.input ?? "").length / 2)
-  const rate = rates[model]
+  const pricing = rate(model)
+  const free =
+    pricing !== null && pricing.inputNanos === 0 && pricing.outputNanos === 0 && pricing.cachedInputNanos === 0
   return {
     input,
     output,
     tokens: input + output,
-    costNanos: Math.ceil(input * rate.inputNanos + output * rate.outputNanos + 250_000),
+    costNanos: free
+      ? 0
+      : Math.ceil(input * (pricing?.inputNanos ?? 0) + output * (pricing?.outputNanos ?? 0) + 250_000),
+  }
+}
+
+export const costConfirmationRequired = (estimatedCostNanos: number, remainingCostNanos: number) =>
+  estimatedCostNanos > 0 && remainingCostNanos > 0 && estimatedCostNanos > remainingCostNanos * 0.1
+
+export const usageWarnings = (used: number, limit: number) => {
+  if (limit <= 0) return []
+  const ratio = used / limit
+  return [0.5, 0.8, 0.95].filter((threshold) => ratio >= threshold)
+}
+
+export const gatewayPayload = (
+  body: Record<string, unknown>,
+  plan: Plan,
+  userID: string,
+  model?: ModelCatalogEntry,
+) => {
+  const providerOptions = record(body.providerOptions) ?? {}
+  const gateway = record(providerOptions.gateway) ?? {}
+  const max = Math.min(integer(body.max_completion_tokens ?? body.max_tokens) || 4_096, plan.maxOutputTokens)
+  return {
+    ...body,
+    max_tokens: max,
+    max_completion_tokens: undefined,
+    service_tier: undefined,
+    tools: model?.mode === "chat_only" ? undefined : body.tools,
+    tool_choice: model?.mode === "chat_only" ? undefined : body.tool_choice,
+    stream_options: body.stream === true ? { include_usage: true } : undefined,
+    providerOptions: {
+      ...providerOptions,
+      gateway: {
+        ...gateway,
+        models: body.model === "poolside/laguna-s-2.1-free" ? ["zai/glm-4.6v-flash"] : undefined,
+        user: userID,
+        tags: ["product:codetutor", `plan:${plan.id}`],
+      },
+    },
   }
 }
 
 export const reserveRequest = async (
   admin: SupabaseClient,
-  input: { userID: string; requestID: string; plan: Plan; model: string; tokens: number; costNanos: number },
+  input: {
+    userID: string
+    requestID: string
+    plan: Plan
+    model: string
+    period: { start: string; end: string }
+    tokens: number
+    costNanos: number
+  },
 ) => {
-  const result = await admin.rpc("reserve_managed_ai_usage", {
+  const result = await admin.rpc("reserve_managed_ai_usage_v2", {
     p_user_id: input.userID,
     p_request_id: input.requestID,
     p_plan: input.plan.id,
     p_model: input.model,
+    p_period_start: input.period.start,
+    p_period_end: input.period.end,
     p_reserved_tokens: input.tokens,
     p_reserved_cost_nanos: input.costNanos,
     p_request_limit: input.plan.monthlyRequests,
     p_token_limit: input.plan.monthlyTokens,
-    p_cost_limit_nanos: input.plan.monthlySpendNanos,
+    p_included_cost_limit_nanos: input.plan.monthlySpendNanos,
     p_rpm_limit: input.plan.requestsPerMinute,
     p_concurrency_limit: input.plan.concurrentRequests,
   })
@@ -99,11 +159,11 @@ export const finalizeRequest = async (
     userID: string
     requestID: string
     usage: Usage
-    model: string
+    model: string | ModelCatalogEntry
     status: "completed" | "released"
   },
 ) => {
-  const result = await admin.rpc("finalize_managed_ai_usage", {
+  const result = await admin.rpc("finalize_managed_ai_usage_v2", {
     p_user_id: input.userID,
     p_request_id: input.requestID,
     p_input_tokens: input.usage.input,
@@ -118,24 +178,13 @@ export const gatewayRequest = async (
   request: Request,
   body: Record<string, unknown>,
   plan: Plan,
+  userID: string,
+  model?: ModelCatalogEntry,
 ) => {
-  const providerOptions = record(body.providerOptions) ?? {}
-  const gateway = record(providerOptions.gateway) ?? {}
-  const max = Math.min(integer(body.max_completion_tokens ?? body.max_tokens) || 4_096, plan.maxOutputTokens)
   return fetch("https://ai-gateway.vercel.sh/v1/chat/completions", {
     method: "POST",
     headers: { authorization: `Bearer ${aiGatewayToken()}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      ...body,
-      max_tokens: max,
-      max_completion_tokens: undefined,
-      service_tier: undefined,
-      stream_options: body.stream === true ? { include_usage: true } : undefined,
-      providerOptions: {
-        ...providerOptions,
-        gateway: { ...gateway, models: undefined, user: undefined, tags: undefined },
-      },
-    }),
+    body: JSON.stringify(gatewayPayload(body, plan, userID, model)),
     signal: request.signal,
   })
 }

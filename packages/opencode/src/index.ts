@@ -3,6 +3,7 @@ import { hideBin } from "yargs/helpers"
 import { RunCommand } from "./cli/cmd/run"
 import { GenerateCommand } from "./cli/cmd/generate"
 import { ProvidersCommand } from "./cli/cmd/providers"
+import { PairingCommand } from "./cli/cmd/pairing"
 import { AgentCommand } from "./cli/cmd/agent"
 import { UpgradeCommand } from "./cli/cmd/upgrade"
 import { UninstallCommand } from "./cli/cmd/uninstall"
@@ -98,6 +99,7 @@ const cli = yargs(args)
   .command(GenerateCommand)
   .command(DebugCommand)
   .command(ProvidersCommand)
+  .command(PairingCommand)
   .command(AgentCommand)
   .command(UpgradeCommand)
   .command(UninstallCommand)

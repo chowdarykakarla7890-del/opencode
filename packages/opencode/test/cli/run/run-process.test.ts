@@ -223,7 +223,10 @@ describe("codetutor run (non-interactive subprocess)", () => {
           }),
         )
         yield* llm.fail("provider failed")
-        const result = yield* opencode.run("fail after output", { format: "json" })
+        const result = yield* opencode.run("fail after output", {
+          format: "json",
+          extraArgs: ["--dangerously-skip-permissions"],
+        })
 
         const events = opencode.parseJsonEvents(result.stdout)
         expect(result.exitCode).toBe(0)
@@ -242,14 +245,14 @@ describe("codetutor run (non-interactive subprocess)", () => {
   )
 
   cliIt.concurrent(
-    "rejects requested permissions by default and allows them with the dangerous flag",
+    "rejects destructive permissions by default and honors the explicit dangerous flag",
     ({ home, llm, opencode }) =>
       Effect.gen(function* () {
         yield* llm.tool("bash", { command: "rm -f denied-file", description: "Remove a test file" })
         yield* llm.text("continued after rejection")
         const denied = yield* opencode.run("request permission", { permission: { bash: "ask" } })
         opencode.expectExit(denied, 0)
-        expect(denied.stderr).toContain("permission requested: bash")
+        expect(denied.stderr).toContain("permission requested: destructive")
         expect(denied.stdout).toBe("")
 
         yield* llm.reset
@@ -260,7 +263,7 @@ describe("codetutor run (non-interactive subprocess)", () => {
           extraArgs: ["--dangerously-skip-permissions"],
         })
         opencode.expectExit(allowed, 0)
-        expect(allowed.stderr).not.toContain("permission requested: bash")
+        expect(allowed.stderr).not.toContain("permission requested: destructive")
         expect(allowed.stdout).toContain("continued after approval")
 
         yield* llm.reset

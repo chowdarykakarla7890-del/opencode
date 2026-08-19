@@ -16,6 +16,7 @@ import type { Hooks } from "@opencode-ai/plugin"
 import { Process } from "@/util/process"
 import { errorMessage } from "@/util/error"
 import { text } from "node:stream/consumers"
+import { chmod } from "node:fs/promises"
 import { Effect, Option } from "effect"
 
 type PluginAuth = NonNullable<Hooks["auth"]>
@@ -238,11 +239,35 @@ export function resolvePluginProviders(input: {
 
 export const ProvidersCommand = cmd({
   command: "providers",
-  aliases: ["auth"],
-  describe: "manage AI providers and credentials",
+  describe: "show managed model setup information",
   builder: (yargs) =>
-    yargs.command(ProvidersListCommand).command(ProvidersLoginCommand).command(ProvidersLogoutCommand).demandCommand(),
+    yargs
+      .command({ ...ProvidersListCommand, describe: "list quarantined provider credentials" })
+      .command({ ...ProvidersLogoutCommand, command: "remove [provider]", describe: "remove a quarantined credential" })
+      .command(ProvidersExportCommand)
+      .demandCommand(),
   async handler() {},
+})
+
+export const ProvidersExportCommand = effectCmd({
+  command: "export <file>",
+  describe: "export quarantined credentials to a protected file",
+  instance: false,
+  builder: (yargs) => yargs.positional("file", { type: "string", demandOption: true }),
+  handler: Effect.fn("Cli.providers.export")(function* (args) {
+    const authSvc = yield* Auth.Service
+    const output = path.resolve(args.file)
+    const credentials = yield* Effect.orDie(authSvc.all())
+    yield* Effect.tryPromise({
+      try: async () => {
+        await Bun.write(output, JSON.stringify(credentials, null, 2), { createPath: false })
+        await chmod(output, 0o600)
+      },
+      catch: (cause) => new CliError({ message: `Failed to export credentials: ${errorMessage(cause)}` }),
+    })
+    UI.empty()
+    yield* Prompt.outro(`Exported ${Object.keys(credentials).length} quarantined credentials to ${output}`)
+  }),
 })
 
 export const ProvidersListCommand = effectCmd({

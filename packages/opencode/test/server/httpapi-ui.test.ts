@@ -201,7 +201,7 @@ describe("HttpApi UI fallback", () => {
       expect(response.status).toBe(200)
       expect(response.headers.get("content-type")).toContain("text/html")
       expect(yield* responseText(response)).toBe("<html>opencode</html>")
-      expect(proxiedUrl).toBe("https://app.codetutor.ai/")
+      expect(proxiedUrl).toBe("https://codetutor-app-red.vercel.app/")
     }),
   )
 
@@ -246,7 +246,7 @@ describe("HttpApi UI fallback", () => {
       )
 
       expect(response.status).toBe(200)
-      expect(proxiedUrl).toBe("https://app.codetutor.ai/assets/app.js")
+      expect(proxiedUrl).toBe("https://codetutor-app-red.vercel.app/assets/app.js")
       expect(response.headers.get("content-encoding")).toBeNull()
       expect(response.headers.get("content-length")).not.toBe("999")
       expect(response.headers.get("content-type")).toContain("text/javascript")

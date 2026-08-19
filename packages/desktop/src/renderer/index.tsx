@@ -227,6 +227,11 @@ const createPlatform = (windowState: DesktopWindowState): Platform => {
     },
 
     storage,
+    secureStorage: {
+      getItem: (key) => window.api.secureStorageGet(key),
+      setItem: (key, value) => window.api.secureStorageSet(key, value),
+      removeItem: (key) => window.api.secureStorageDelete(key),
+    },
     draftStore: createDraftStore({
       get: window.api.draftGet,
       set: window.api.draftSet,

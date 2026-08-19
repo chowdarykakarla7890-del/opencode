@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process"
 import { stat } from "node:fs/promises"
 import { basename, join } from "node:path"
-import { app, BrowserWindow, clipboard, dialog, ipcMain, shell } from "electron"
+import { app, BrowserWindow, clipboard, dialog, ipcMain, safeStorage, shell } from "electron"
 import type { IpcMainEvent, IpcMainInvokeEvent } from "electron"
 import type { DesktopMenuAction } from "@opencode-ai/app/desktop-menu"
 import { parseDesktopNativeBundle, type DesktopNativeBundle } from "@opencode-ai/app/i18n/desktop-native"
@@ -139,6 +139,28 @@ export function registerIpcHandlers(deps: Deps) {
   ipcMain.handle("store-length", (_event: IpcMainInvokeEvent, name: string) => {
     const store = getStore(name)
     return Object.keys(store.store).length
+  })
+  const secureStore = getStore("codetutor.secure.dat")
+  const encryptionAvailable = () =>
+    safeStorage.isEncryptionAvailable() &&
+    (process.platform !== "linux" || safeStorage.getSelectedStorageBackend() !== "basic_text")
+  const secureKey = (key: string) => {
+    if (!key || key.length > 512) throw new Error("Invalid secure-storage key")
+    return key
+  }
+  ipcMain.handle("secure-storage-get", (_event: IpcMainInvokeEvent, key: string) => {
+    if (!encryptionAvailable()) return null
+    const value = secureStore.get(secureKey(key))
+    if (typeof value !== "string") return null
+    return safeStorage.decryptString(Buffer.from(value, "base64"))
+  })
+  ipcMain.handle("secure-storage-set", (_event: IpcMainInvokeEvent, key: string, value: string) => {
+    if (!encryptionAvailable()) throw new Error("Operating system credential storage is unavailable")
+    secureStore.set(secureKey(key), safeStorage.encryptString(value).toString("base64"))
+  })
+  ipcMain.handle("secure-storage-delete", (_event: IpcMainInvokeEvent, key: string) => {
+    secureStore.delete(secureKey(key))
+    void removeStoreFileIfEmpty("codetutor.secure.dat")
   })
   ipcMain.handle("draft-get", (_event, key: string) => drafts.get(key))
   ipcMain.handle("draft-set", (_event, key: string, value: string) => drafts.set(key, value))

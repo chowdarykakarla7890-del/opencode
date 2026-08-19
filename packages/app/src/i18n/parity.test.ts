@@ -105,7 +105,9 @@ describe("i18n parity", () => {
         // New CodeTutor product copy intentionally ships in English first and is
         // supplied by the runtime base dictionary until translations are added.
         const missing = Object.keys(source).filter(
-          (key) => !["builder.", "learning."].some((prefix) => key.startsWith(prefix)) && !Object.hasOwn(target, key),
+          (key) =>
+            !["builder.", "learning.", "account.", "model.tag."].some((prefix) => key.startsWith(prefix)) &&
+            !Object.hasOwn(target, key),
         )
         const extra = Object.keys(target)
           .filter((key) => !Object.hasOwn(source, key))

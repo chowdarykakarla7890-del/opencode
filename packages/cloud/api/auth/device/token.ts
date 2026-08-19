@@ -35,7 +35,7 @@ const handler = (request: Request) =>
     const hash = await tokenHash(deviceCode)
     const { data, error } = await admin
       .from("device_authorizations")
-      .select("status,user_id,expires_at,interval_seconds,last_polled_at")
+      .select("status,user_id,client_id,client_type,device_name,platform,strict_login,expires_at,interval_seconds,last_polled_at")
       .eq("device_code_hash", hash)
       .maybeSingle()
     if (error) throw error
@@ -64,7 +64,13 @@ const handler = (request: Request) =>
       )
     }
 
-    const tokens = await createAccountSession(data.user_id)
+    const tokens = await createAccountSession(data.user_id, {
+      clientID: data.client_id,
+      clientType: data.client_type === "desktop" ? "desktop" : "cli",
+      deviceName: data.device_name ?? undefined,
+      platform: data.platform ?? undefined,
+      strictLogin: data.strict_login,
+    })
     const consumed = await admin
       .from("device_authorizations")
       .update({ status: "consumed", consumed_at: new Date().toISOString() })

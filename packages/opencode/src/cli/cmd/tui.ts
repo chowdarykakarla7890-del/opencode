@@ -14,6 +14,7 @@ import { writeHeapSnapshot } from "v8"
 import { ServerAuth } from "@/server/auth"
 import { validateSession } from "../tui/validate-session"
 import { win32InstallCtrlCGuard } from "@opencode-ai/tui/terminal-win32"
+import open from "open"
 
 declare global {
   const CODETUTOR_WORKER_PATH: string
@@ -133,7 +134,7 @@ export const TuiThreadCommand = cmd({
       })
       .option("auto", {
         type: "boolean",
-        describe: "auto-approve permissions that are not explicitly denied (dangerous!)",
+        describe: "auto-approve only non-editing, non-shell safe permissions",
         default: false,
       })
       .option("yolo", {
@@ -174,6 +175,12 @@ export const TuiThreadCommand = cmd({
       return
     }
     await ensureLearnerLevel()
+    const { AppRuntime } = await import("@/effect/app-runtime")
+    const { AccountStrict } = await import("@/account/strict")
+    if (await AppRuntime.runPromise(AccountStrict.enabled())) {
+      const { accountUrl, loginEffect } = await import("./account")
+      await AppRuntime.runPromise(loginEffect(accountUrl(), true))
+    }
     const noReplay = args.replay === false || args.noReplay === true
 
     if (args.mini) {
@@ -295,8 +302,12 @@ export const TuiThreadCommand = cmd({
 
       try {
         const { Effect } = await import("effect")
+        const { Option } = await import("effect")
         const { run } = await import("../tui/layer")
         const { createLegacyTuiPluginHost } = await import("@/plugin/tui/runtime")
+        const { AppRuntime } = await import("@/effect/app-runtime")
+        const { Account } = await import("@/account/account")
+        const accountAppUrl = process.env.CODETUTOR_APP_URL?.trim() || "https://codetutor-app-red.vercel.app"
         await Effect.runPromise(
           run({
             url: transport.url,
@@ -311,6 +322,38 @@ export const TuiThreadCommand = cmd({
             fetch: transport.fetch,
             headers: transport.headers,
             events: transport.events,
+            account: {
+              summary: () =>
+                AppRuntime.runPromise(
+                  Effect.gen(function* () {
+                    const service = yield* Account.Service
+                    const active = yield* service.active()
+                    if (Option.isNone(active)) return { authenticated: false }
+                    const usage = yield* service.usage(active.value.id)
+                    const profile = yield* service.profile(active.value.id)
+                    const sessions = yield* service.sessions(active.value.id)
+                    return {
+                      authenticated: true,
+                      email: active.value.email,
+                      plan: usage.plan.name,
+                      periodEnd: usage.period_end,
+                      requestsUsed: usage.usage.request_count,
+                      requestsRemaining: usage.remaining.requests,
+                      tokensUsed: usage.usage.input_tokens + usage.usage.output_tokens,
+                      tokensRemaining: usage.remaining.tokens,
+                      includedCreditUsed: usage.usage.spend_usd,
+                      includedCreditRemaining: usage.remaining.spend_usd,
+                      topupCredit: usage.credit.remainingNanos / 1_000_000_000,
+                      sessions: sessions.sessions.filter((session) => !session.revoked_at).length,
+                      learnerLevel: profile.profile.learner_level,
+                    }
+                  }),
+                ),
+              open: async (action = "account") => {
+                const query = action === "account" ? "" : `?action=${action}`
+                await open(`${accountAppUrl}/account${query}`).catch(() => undefined)
+              },
+            },
             args: {
               continue: args.continue,
               sessionID: args.session,

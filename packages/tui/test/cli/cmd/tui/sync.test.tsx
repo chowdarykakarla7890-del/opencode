@@ -3,6 +3,7 @@ import { describe, expect, test } from "bun:test"
 import { tmpdir } from "../../../fixture/fixture"
 import { mount, wait } from "./sync-fixture"
 import type { GlobalEvent } from "@opencode-ai/sdk/v2"
+import { permissionRequiresConfirmation } from "../../../../src/context/sync"
 
 function branchEvent(branch: string, workspace?: string): GlobalEvent {
   return {
@@ -18,6 +19,11 @@ function branchEvent(branch: string, workspace?: string): GlobalEvent {
 }
 
 describe("tui sync", () => {
+  test("safe auto-approval never bypasses editing or shell confirmations", () => {
+    expect(["edit", "bash", "external_directory", "destructive", "elevated", "network"].every(permissionRequiresConfirmation)).toBe(true)
+    expect(permissionRequiresConfirmation("read")).toBe(false)
+  })
+
   test("refresh scopes sessions by default and lists project sessions when disabled", async () => {
     await using tmp = await tmpdir()
     await Bun.write(`${tmp.path}/kv.json`, "{}")

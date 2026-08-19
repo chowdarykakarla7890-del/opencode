@@ -117,7 +117,9 @@ const layer: Layer.Layer<Service, never, Auth.Service | Plugin.Service> = Layer.
         return {
           hooks: Record.fromEntries(
             Arr.filterMap(plugins, (x) =>
-              x.auth?.provider !== undefined
+              x.auth?.provider !== undefined &&
+                ((process.env.CODETUTOR_TEST_HOME && process.env.CODETUTOR_INTERNAL_TESTING === "1") ||
+                  x.auth.provider === "codetutor")
                 ? Result.succeed([ProviderV2.ID.make(x.auth.provider), x.auth] as const)
                 : Result.failVoid,
             ),
@@ -164,7 +166,10 @@ const layer: Layer.Layer<Service, never, Auth.Service | Plugin.Service> = Layer.
       input: { providerID: ProviderV2.ID } & AuthorizeInput,
     ) {
       const { hooks, pending } = yield* InstanceState.get(state)
-      const method = hooks[input.providerID].methods[input.method]
+      const hook = hooks[input.providerID]
+      if (!hook) return yield* new OauthMissing({ providerID: input.providerID })
+      const method = hook.methods[input.method]
+      if (!method) return yield* new OauthMissing({ providerID: input.providerID })
       if (method.type !== "oauth") return
 
       if (method.prompts && input.inputs) {

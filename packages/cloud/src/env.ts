@@ -19,12 +19,20 @@ export const billingEnvironment = () => ({
   webhookSecret: required("STRIPE_WEBHOOK_SECRET"),
   starterPrice: required("STRIPE_PRICE_STARTER"),
   proPrice: required("STRIPE_PRICE_PRO"),
+  topup5Price: process.env.STRIPE_PRICE_TOPUP_5?.trim(),
+  topup10Price: process.env.STRIPE_PRICE_TOPUP_10?.trim(),
+  topup25Price: process.env.STRIPE_PRICE_TOPUP_25?.trim(),
   portalConfiguration: process.env.STRIPE_PORTAL_CONFIGURATION?.trim(),
 })
 
 export const billingEnabled = () =>
   ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET", "STRIPE_PRICE_STARTER", "STRIPE_PRICE_PRO"].every(
     (name) => Boolean(process.env[name]?.trim()),
+  )
+
+export const topupsEnabled = () =>
+  ["STRIPE_PRICE_TOPUP_5", "STRIPE_PRICE_TOPUP_10", "STRIPE_PRICE_TOPUP_25"].every((name) =>
+    Boolean(process.env[name]?.trim()),
   )
 
 export const aiGatewayToken = () =>
@@ -41,7 +49,8 @@ export const allowedOrigins = () =>
       "http://127.0.0.1:3000",
       "http://localhost:5173",
       "http://127.0.0.1:5173",
-      process.env.CODETUTOR_APP_URL?.trim() || "https://codetutor-app-red.vercel.app",
+      "https://codetutor-app-red.vercel.app",
+      process.env.CODETUTOR_APP_URL?.trim() ?? "",
       ...(process.env.CODETUTOR_ALLOWED_ORIGINS?.split(",") ?? []),
     ]
       .map((value) => value.trim())

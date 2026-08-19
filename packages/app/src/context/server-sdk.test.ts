@@ -1,7 +1,44 @@
 import { describe, expect, test } from "bun:test"
-import { adaptServerEvent, coalesceServerEvents, enqueueServerEvent, resumeStreamAfterPageShow } from "./server-sdk"
+import {
+  adaptServerEvent,
+  coalesceServerEvents,
+  enqueueServerEvent,
+  eventFetchForPlatform,
+  resumeStreamAfterPageShow,
+} from "./server-sdk"
 import type { OpenCodeEvent } from "@opencode-ai/client/promise"
 import type { Event } from "@opencode-ai/sdk/v2/client"
+import type { Platform } from "./platform"
+import { ServerConnection } from "./server"
+
+describe("eventFetchForPlatform", () => {
+  const fetch = Object.assign(() => Promise.resolve(new Response()), { preconnect: globalThis.fetch.preconnect })
+  const server = (url: string) => ({ type: "http", http: { url } }) as ServerConnection.Any
+
+  test("uses the localhost-aware fetch for hosted web event streams", () => {
+    expect(
+      eventFetchForPlatform(
+        { platform: "web", fetch } as Pick<Platform, "platform" | "fetch">,
+        server("http://localhost:4096"),
+      ),
+    ).toBe(fetch)
+  })
+
+  test("preserves the desktop loopback stream transport", () => {
+    expect(
+      eventFetchForPlatform(
+        { platform: "desktop", fetch } as Pick<Platform, "platform" | "fetch">,
+        server("http://localhost:4096"),
+      ),
+    ).toBeUndefined()
+    expect(
+      eventFetchForPlatform(
+        { platform: "desktop", fetch } as Pick<Platform, "platform" | "fetch">,
+        server("http://192.0.2.1:4096"),
+      ),
+    ).toBe(fetch)
+  })
+})
 
 describe("resumeStreamAfterPageShow", () => {
   test("restarts a stream only after a back-forward cache restore", () => {

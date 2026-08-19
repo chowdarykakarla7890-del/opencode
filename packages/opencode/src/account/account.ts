@@ -11,6 +11,7 @@ import {
 } from "effect/unstable/http"
 
 import { withTransientReadRetry } from "@/util/effect-http-client"
+import os from "node:os"
 import { AccountRepo, type AccountRow } from "./repo"
 import { normalizeServerUrl } from "./url"
 import {
@@ -33,6 +34,15 @@ import {
   PollSlow,
   PollSuccess,
   UserCode,
+  Plan,
+  PlanList,
+  PlanUsage,
+  Entitlement,
+  BillingCheckout,
+  type PlanID,
+  ProfileResponse,
+  AccountSessionList,
+  SessionRevocation,
 } from "./schema"
 
 export {
@@ -56,6 +66,18 @@ export {
   PollDenied,
   PollError,
   PollResult,
+  Plan,
+  PlanList,
+  PlanUsage,
+  Entitlement,
+  BillingCheckout,
+  PlanID,
+  UserProfile,
+  ProfileResponse,
+  AccountSession,
+  AccountSessionList,
+  ServiceKeySummary,
+  LocalPairing,
 } from "./schema"
 
 export type AccountOrgs = {
@@ -120,7 +142,13 @@ class User extends Schema.Class<User>("User")({
   email: Schema.String,
 }) {}
 
-class ClientId extends Schema.Class<ClientId>("ClientId")({ client_id: Schema.String }) {}
+class DeviceAuthorizationRequest extends Schema.Class<DeviceAuthorizationRequest>("DeviceAuthorizationRequest")({
+  client_id: Schema.String,
+  client_type: Schema.Literal("cli"),
+  device_name: Schema.String,
+  platform: Schema.String,
+  strict_login: Schema.Boolean,
+}) {}
 
 class DeviceTokenRequest extends Schema.Class<DeviceTokenRequest>("DeviceTokenRequest")({
   grant_type: Schema.String,
@@ -178,8 +206,17 @@ export interface Interface {
     orgID?: OrgID,
   ) => Effect.Effect<Option.Option<Record<string, unknown>>, AccountError>
   readonly token: (accountID: AccountID) => Effect.Effect<Option.Option<AccessToken>, AccountError>
-  readonly login: (url: string) => Effect.Effect<Login, AccountError>
+  readonly login: (url: string, strict?: boolean) => Effect.Effect<Login, AccountError>
   readonly poll: (input: Login) => Effect.Effect<PollResult, AccountError>
+  readonly plans: (accountID: AccountID) => Effect.Effect<readonly Plan[], AccountError>
+  readonly entitlement: (accountID: AccountID) => Effect.Effect<Entitlement, AccountError>
+  readonly usage: (accountID: AccountID) => Effect.Effect<PlanUsage, AccountError>
+  readonly changePlan: (accountID: AccountID, plan: PlanID) => Effect.Effect<BillingCheckout, AccountError>
+  readonly topup: (accountID: AccountID, pack: "5" | "10" | "25") => Effect.Effect<BillingCheckout, AccountError>
+  readonly billing: (accountID: AccountID) => Effect.Effect<BillingCheckout, AccountError>
+  readonly profile: (accountID: AccountID) => Effect.Effect<ProfileResponse, AccountError>
+  readonly sessions: (accountID: AccountID) => Effect.Effect<AccountSessionList, AccountError>
+  readonly revokeSession: (accountID: AccountID, sessionID?: string) => Effect.Effect<readonly string[], AccountError>
 }
 
 export class Service extends Context.Service<Service, Interface>()("@opencode/Account") {}
@@ -384,12 +421,115 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
       return Option.some(parsed.config)
     })
 
-    const login = Effect.fn("Account.login")(function* (server: string) {
+    const accountResponse = Effect.fnUntraced(function* (
+      accountID: AccountID,
+      path: string,
+      init?: { method?: "POST" | "DELETE"; body?: Record<string, string | boolean> },
+    ) {
+      const resolved = yield* resolveAccess(accountID)
+      if (Option.isNone(resolved)) {
+        return yield* Effect.fail(new AccountServiceError({ message: "Account not found" }))
+      }
+      const request = init
+        ? (init.method === "DELETE"
+            ? HttpClientRequest.delete(`${resolved.value.account.url}${path}`)
+            : HttpClientRequest.post(`${resolved.value.account.url}${path}`)
+          ).pipe(
+            HttpClientRequest.acceptJson,
+            HttpClientRequest.bearerToken(resolved.value.accessToken),
+            HttpClientRequest.bodyJson(init.body ?? {}),
+          )
+        : Effect.succeed(
+            HttpClientRequest.get(`${resolved.value.account.url}${path}`).pipe(
+              HttpClientRequest.acceptJson,
+              HttpClientRequest.bearerToken(resolved.value.accessToken),
+            ),
+          )
+      return yield* executeEffectOk(request)
+    })
+
+    const plans = Effect.fn("Account.plans")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/plans")
+      const parsed = yield* HttpClientResponse.schemaBodyJson(PlanList)(response).pipe(
+        mapAccountServiceError("Failed to decode plans"),
+      )
+      return parsed.plans
+    })
+
+    const entitlement = Effect.fn("Account.entitlement")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/entitlements")
+      return yield* HttpClientResponse.schemaBodyJson(Entitlement)(response).pipe(
+        mapAccountServiceError("Failed to decode entitlement"),
+      )
+    })
+
+    const usage = Effect.fn("Account.usage")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/usage")
+      return yield* HttpClientResponse.schemaBodyJson(PlanUsage)(response).pipe(
+        mapAccountServiceError("Failed to decode usage"),
+      )
+    })
+
+    const changePlan = Effect.fn("Account.changePlan")(function* (accountID: AccountID, plan: PlanID) {
+      const response = yield* accountResponse(accountID, "/api/billing/change-plan", { body: { plan } })
+      return yield* HttpClientResponse.schemaBodyJson(BillingCheckout)(response).pipe(
+        mapAccountServiceError("Failed to start plan change"),
+      )
+    })
+
+    const topup = Effect.fn("Account.topup")(function* (accountID: AccountID, pack: "5" | "10" | "25") {
+      const response = yield* accountResponse(accountID, "/api/billing/topup", { body: { pack } })
+      return yield* HttpClientResponse.schemaBodyJson(BillingCheckout)(response).pipe(
+        mapAccountServiceError("Failed to start top-up checkout"),
+      )
+    })
+
+    const billing = Effect.fn("Account.billing")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/billing/portal", { body: {} })
+      return yield* HttpClientResponse.schemaBodyJson(BillingCheckout)(response).pipe(
+        mapAccountServiceError("Failed to open billing portal"),
+      )
+    })
+
+    const profile = Effect.fn("Account.profile")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/profile")
+      return yield* HttpClientResponse.schemaBodyJson(ProfileResponse)(response).pipe(
+        mapAccountServiceError("Failed to decode profile"),
+      )
+    })
+
+    const sessions = Effect.fn("Account.sessions")(function* (accountID: AccountID) {
+      const response = yield* accountResponse(accountID, "/api/account/sessions")
+      return yield* HttpClientResponse.schemaBodyJson(AccountSessionList)(response).pipe(
+        mapAccountServiceError("Failed to decode account sessions"),
+      )
+    })
+
+    const revokeSession = Effect.fn("Account.revokeSession")(function* (accountID: AccountID, sessionID?: string) {
+      const response = yield* accountResponse(accountID, "/api/account/sessions", {
+        method: "DELETE",
+        body: sessionID ? { session_id: sessionID } : { all: true },
+      })
+      const parsed = yield* HttpClientResponse.schemaBodyJson(SessionRevocation)(response).pipe(
+        mapAccountServiceError("Failed to revoke account session"),
+      )
+      return parsed.revoked
+    })
+
+    const login = Effect.fn("Account.login")(function* (server: string, strict = false) {
       const normalizedServer = normalizeServerUrl(server)
       const response = yield* executeEffectOk(
         HttpClientRequest.post(`${normalizedServer}/auth/device/code`).pipe(
           HttpClientRequest.acceptJson,
-          HttpClientRequest.schemaBodyJson(ClientId)(new ClientId({ client_id: clientId })),
+          HttpClientRequest.schemaBodyJson(DeviceAuthorizationRequest)(
+            new DeviceAuthorizationRequest({
+              client_id: clientId,
+              client_type: "cli",
+              device_name: os.hostname(),
+              platform: process.platform,
+              strict_login: strict,
+            }),
+          ),
         ),
       )
 
@@ -427,13 +567,7 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
       if (parsed instanceof DeviceTokenError) return parsed.toPollResult()
       const accessToken = parsed.access_token
 
-      const user = fetchUser(input.server, accessToken)
-      const orgs = fetchOrgs(input.server, accessToken)
-
-      const [account, remoteOrgs] = yield* Effect.all([user, orgs], { concurrency: 2 })
-
-      // TODO: When there are multiple orgs, let the user choose
-      const firstOrgID = remoteOrgs.length > 0 ? Option.some(remoteOrgs[0].id) : Option.none<OrgID>()
+      const account = yield* fetchUser(input.server, accessToken)
 
       const now = yield* Clock.currentTimeMillis
       const expiry = now + Duration.toMillis(parsed.expires_in)
@@ -446,7 +580,7 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
         accessToken,
         refreshToken,
         expiry,
-        orgID: firstOrgID,
+        orgID: Option.none(),
       })
 
       return new PollSuccess({ email: account.email })
@@ -464,6 +598,15 @@ const layer: Layer.Layer<Service, never, AccountRepo.Service | HttpClient.HttpCl
       token,
       login,
       poll,
+      plans,
+      entitlement,
+      usage,
+      changePlan,
+      topup,
+      billing,
+      profile,
+      sessions,
+      revokeSession,
     })
   }),
 )

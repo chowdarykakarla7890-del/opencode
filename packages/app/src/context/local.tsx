@@ -29,6 +29,16 @@ type Saved = {
 
 const WORKSPACE_KEY = "__workspace__"
 const handoff = new Map<string, State>()
+const managedAliases: Record<string, string> = {
+  free: "poolside/laguna-s-2.1-free",
+  fast: "google/gemini-3.1-flash-lite",
+  mentor: "openai/gpt-5.4-mini",
+}
+
+const normalizeModel = (model: ModelKey) =>
+  model.providerID === "codetutor" && managedAliases[model.modelID]
+    ? { ...model, modelID: managedAliases[model.modelID] }
+    : model
 
 const handoffKey = (scope: ServerScope, dir: string, id: string) => ScopedKey.from(scope, dir, id)
 
@@ -40,7 +50,16 @@ const migrate = (value: unknown) => {
     pick?: Record<string, State | undefined>
   }
 
-  if (item.session && typeof item.session === "object") return { session: item.session }
+  if (item.session && typeof item.session === "object") {
+    return {
+      session: Object.fromEntries(
+        Object.entries(item.session).map(([key, state]) => [
+          key,
+          state?.model ? { ...state, model: normalizeModel(state.model) } : state,
+        ]),
+      ),
+    }
+  }
   if (!item.pick || typeof item.pick !== "object") return { session: {} }
 
   return {
@@ -99,8 +118,10 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     })
 
     const validModel = (model: ModelKey) => {
-      const provider = providers.all().get(model.providerID)
-      return !!provider?.models[model.modelID] && connected().has(model.providerID)
+      const normalized = normalizeModel(model)
+      const provider = providers.all().get(normalized.providerID)
+      const info = provider?.models[normalized.modelID]
+      return !!info && info.capabilities.output.text && info.limit.output > 0 && connected().has(normalized.providerID)
     }
 
     const firstModel = (...items: Array<() => ModelKey | undefined>) => {
@@ -164,6 +185,7 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     const defaultModel = () => {
       const defaults = providers.default()
       for (const provider of providers.connected()) {
+        if (provider.id === "codetutor") continue
         const configured = defaults[provider.id]
         if (configured) {
           const model = { providerID: provider.id, modelID: configured }

@@ -44,6 +44,7 @@ process.env["CODETUTOR_EXPERIMENTAL_WORKSPACES"] = "true"
 const testHome = path.join(dir, "home")
 await fs.mkdir(testHome, { recursive: true })
 process.env["CODETUTOR_TEST_HOME"] = testHome
+process.env["CODETUTOR_INTERNAL_TESTING"] = "1"
 
 // Set test managed config directory to isolate tests from system managed settings
 const testManagedConfigDir = path.join(dir, "managed")

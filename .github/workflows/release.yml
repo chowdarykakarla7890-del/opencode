@@ -171,6 +171,15 @@ jobs:
         with:
           path: artifacts
           merge-multiple: true
+      - uses: anchore/sbom-action/download-syft@v0
+      - uses: sigstore/cosign-installer@v3
+      - name: Generate SBOM, checksums, and signed manifest
+        run: |
+          syft dir:artifacts -o cyclonedx-json=artifacts/codetutor-sbom.cdx.json
+          find artifacts -type f ! -name 'SHA256SUMS' ! -name '*.sigstore.json' -print0 \
+            | sort -z \
+            | xargs -0 sha256sum > artifacts/SHA256SUMS
+          cosign sign-blob --yes --bundle artifacts/SHA256SUMS.sigstore.json artifacts/SHA256SUMS
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -186,6 +195,9 @@ jobs:
               -name 'codetutor-desktop-*.AppImage' -o \
               -name 'codetutor-desktop-*.deb' -o \
               -name 'codetutor-desktop-*.rpm' \
+              -o -name 'codetutor-sbom.cdx.json' \
+              -o -name 'SHA256SUMS' \
+              -o -name 'SHA256SUMS.sigstore.json' \
             \) -print0
           )
           test "${#assets[@]}" -gt 0

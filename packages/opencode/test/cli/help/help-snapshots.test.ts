@@ -48,7 +48,7 @@ const TOP_LEVEL = [
   "attach",
   "run",
   "debug",
-  "providers", // aliased to `auth`
+  "providers", // quarantine management; new provider login is intentionally unavailable
   "agent",
   "upgrade",
   "uninstall",
@@ -63,6 +63,7 @@ const TOP_LEVEL = [
   "plugin",
   "db",
   "learn",
+  "account",
 ] as const
 
 // Subcommands worth pinning. Not exhaustive — the goal is one snapshot per
@@ -74,8 +75,8 @@ const SUBCOMMANDS = [
   ["mcp", "auth"],
   ["mcp", "logout"],
   ["providers", "list"],
-  ["providers", "login"],
-  ["providers", "logout"],
+  ["providers", "remove"],
+  ["providers", "export"],
   ["agent", "create"],
   ["agent", "list"],
   ["session", "list"],
@@ -90,6 +91,12 @@ const SUBCOMMANDS = [
   ["learn", "solution"],
   ["learn", "reset"],
   ["learn", "level"],
+  ["account", "plan"],
+  ["account", "plans"],
+  ["account", "usage"],
+  ["account", "upgrade"],
+  ["account", "topup"],
+  ["account", "billing"],
 ] as const
 
 // Fixed wrap width so a developer's terminal doesn't affect snapshots.

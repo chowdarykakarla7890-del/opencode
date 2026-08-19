@@ -1,6 +1,13 @@
 import { Config as EffectConfig, Context, Effect, Layer } from "effect"
 import { HttpApiBuilder, OpenApi } from "effect/unstable/httpapi"
-import { HttpClient, HttpMiddleware, HttpRouter, HttpServer, HttpServerResponse } from "effect/unstable/http"
+import {
+  HttpClient,
+  HttpMiddleware,
+  HttpRouter,
+  HttpServer,
+  HttpServerRequest,
+  HttpServerResponse,
+} from "effect/unstable/http"
 import * as Socket from "effect/unstable/socket/Socket"
 import { FSUtil } from "@opencode-ai/core/fs-util"
 import * as Observability from "@opencode-ai/core/observability"
@@ -115,6 +122,7 @@ import { corsVaryFix } from "./middleware/cors-vary"
 import { errorLayer } from "./middleware/error"
 import { fenceLayer } from "./middleware/fence"
 import { schemaErrorLayer } from "./middleware/schema-error"
+import { LocalPairing } from "@/server/pairing"
 
 export const context = Context.makeUnsafe<unknown>(new Map())
 
@@ -191,6 +199,89 @@ const docResponse = lazy(() => HttpServerResponse.jsonUnsafe(OpenApi.fromApi(Pub
 const docRoute = HttpRouter.use((router) => router.add("GET", "/doc", () => Effect.succeed(docResponse()))).pipe(
   Layer.provide(authOnlyRouterLayer),
 )
+
+const pairingRoute = HttpRouter.use((router) =>
+  Effect.gen(function* () {
+    yield* router.add("POST", "/api/local/pairing/request", (request) =>
+      Effect.gen(function* () {
+        const origin = request.headers.origin ?? ""
+        if (origin !== LocalPairing.hostedOrigin) return HttpServerResponse.jsonUnsafe({ error: "origin_not_allowed" }, { status: 403 })
+        const authorization = request.headers.authorization
+        if (!authorization?.startsWith("Bearer ")) return HttpServerResponse.jsonUnsafe({ error: "unauthorized" }, { status: 401 })
+        const accountUrl = process.env.CODETUTOR_ACCOUNT_URL?.trim() || "https://codetutor-cloud.vercel.app"
+        const account = yield* Effect.promise(() =>
+          fetch(`${accountUrl}/api/user`, { headers: { authorization } }).then(async (response) => {
+            if (!response.ok) return null
+            const value: unknown = await response.json()
+            if (!value || typeof value !== "object" || Array.isArray(value)) return null
+            const user = value as Record<string, unknown>
+            if (typeof user.id !== "string" || typeof user.email !== "string") return null
+            return { id: user.id, email: user.email }
+          }),
+        )
+        if (!account) return HttpServerResponse.jsonUnsafe({ error: "unauthorized" }, { status: 401 })
+        const result = yield* Effect.promise(() =>
+          LocalPairing.request({ origin, userID: account.id, email: account.email }),
+        )
+        return HttpServerResponse.jsonUnsafe(result, { status: 201 })
+      }),
+    )
+    yield* router.add("GET", "/api/local/pairing/status", (request) =>
+      Effect.gen(function* () {
+        const origin = request.headers.origin ?? ""
+        const requestID = new URL(request.url, "http://localhost").searchParams.get("request_id") ?? ""
+        if (origin !== LocalPairing.hostedOrigin || !requestID) {
+          return HttpServerResponse.jsonUnsafe({ error: "invalid_pairing_request" }, { status: 400 })
+        }
+        return HttpServerResponse.jsonUnsafe(
+          yield* Effect.promise(() => LocalPairing.poll({ requestID, origin })),
+        )
+      }),
+    )
+    yield* router.add("GET", "/api/local/pairing/current", (request) =>
+      Effect.gen(function* () {
+        const token = pairingToken(request.headers.authorization)
+        const pairing = yield* Effect.promise(() => LocalPairing.resolve(token, request.headers.origin ?? ""))
+        return pairing
+          ? HttpServerResponse.jsonUnsafe({ pairing })
+          : HttpServerResponse.jsonUnsafe({ error: "unauthorized" }, { status: 401 })
+      }),
+    )
+    yield* router.add("DELETE", "/api/local/pairing/current", (request) =>
+      Effect.gen(function* () {
+        const token = pairingToken(request.headers.authorization)
+        const pairing = yield* Effect.promise(() => LocalPairing.resolve(token, request.headers.origin ?? ""))
+        if (!pairing) return HttpServerResponse.jsonUnsafe({ error: "unauthorized" }, { status: 401 })
+        yield* Effect.promise(() => LocalPairing.revoke(pairing.id))
+        return HttpServerResponse.jsonUnsafe({ revoked: true })
+      }),
+    )
+  }),
+)
+
+const hostedPairingGate = HttpRouter.middleware()(
+  Effect.succeed((effect) =>
+    Effect.gen(function* () {
+      const request = yield* HttpServerRequest.HttpServerRequest
+      const origin = request.headers.origin ?? ""
+      if (origin !== LocalPairing.hostedOrigin || request.method === "OPTIONS") return yield* effect
+      const pathname = new URL(request.url, "http://localhost").pathname
+      if (pathname === "/api/local/pairing/request" || pathname === "/api/local/pairing/status") return yield* effect
+      const token = pairingToken(request.headers.authorization, request.url)
+      if (yield* Effect.promise(() => LocalPairing.authorized(token, origin))) return yield* effect
+      return HttpServerResponse.empty({ status: 401 })
+    }),
+  ),
+)
+
+function pairingToken(header?: string, requestUrl?: string) {
+  const match = /^Basic\s+(.+)$/i.exec(header ?? "")
+  const query = requestUrl ? new URL(requestUrl, "http://localhost").searchParams.get("auth_token") : null
+  const encoded = match?.[1] ?? query ?? ""
+  const decoded = encoded ? Buffer.from(encoded, "base64").toString("utf8") : ""
+  const separator = decoded.indexOf(":")
+  return separator === -1 ? "" : decoded.slice(separator + 1)
+}
 
 const uiRoute = HttpRouter.use((router) =>
   Effect.gen(function* () {
@@ -279,6 +370,7 @@ export function createRoutes(
     ptyConnectApiRoutes,
     instanceRoutes,
     serverRoutes,
+    pairingRoute,
     docRoute,
     uiRoute,
   ).pipe(
@@ -288,6 +380,7 @@ export function createRoutes(
       corsVaryFix,
       fenceLayer,
       cors(corsOptions),
+      hostedPairingGate.layer,
       AppNodeBuilderV1.build(MoveSession.node, [[LocationServiceMap.node, locationServiceMapV2]]),
       HttpServer.layerServices,
     ]),

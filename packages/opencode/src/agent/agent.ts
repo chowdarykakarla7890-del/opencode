@@ -120,6 +120,11 @@ const layer = Layer.effect(
         const defaults = Permission.fromConfig({
           "*": "allow",
           doom_loop: "ask",
+          edit: "ask",
+          bash: "ask",
+          destructive: "ask",
+          network: "ask",
+          elevated: "ask",
           external_directory: {
             "*": "ask",
             ...Object.fromEntries(whitelistedDirs.map((dir) => [dir, "allow"])),
@@ -303,9 +308,27 @@ const layer = Layer.effect(
           item.permission = Permission.merge(item.permission, Permission.fromConfig(value.permission ?? {}))
         }
 
-        // Ensure Truncate.GLOB is allowed unless explicitly configured
+        const interactivePermissions = new Set([
+          "edit",
+          "bash",
+          "destructive",
+          "network",
+          "elevated",
+          "external_directory",
+        ])
+        for (const agent of Object.values(agents)) {
+          if (agent.hidden || agent.name === "plan") continue
+          agent.permission = agent.permission.map((rule) => {
+            if (!interactivePermissions.has(rule.permission)) return rule
+            if (rule.action !== "allow") return rule
+            return { ...rule, action: "ask" }
+          })
+        }
+
+        // Hidden maintenance agents need framework-owned paths without interactive prompts.
         for (const name in agents) {
           const agent = agents[name]
+          if (!agent.hidden) continue
           const explicit = agent.permission.some((r) => {
             if (r.permission !== "external_directory") return false
             if (r.action !== "deny") return false

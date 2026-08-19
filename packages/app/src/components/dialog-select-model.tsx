@@ -17,14 +17,14 @@ import { MenuV2 } from "@opencode-ai/ui/v2/menu-v2"
 import { TooltipV2 } from "@opencode-ai/ui/v2/tooltip-v2"
 import { ModelTooltip } from "./model-tooltip"
 import { useLanguage } from "@/context/language"
-import { decode64 } from "@/utils/base64"
 import { handleDocumentSearchKeydown } from "@/utils/search-keydown"
 import { createMenuDismissController } from "@/utils/menu-dismiss-controller"
 import { createEventListener } from "@solid-primitives/event-listener"
 import { matchesModelSearch } from "./dialog-select-model-search"
+import { decode64 } from "@/utils/base64"
 
 const isFree = (provider: string, cost: { input: number } | undefined) =>
-  provider === "opencode" && (!cost || cost.input === 0)
+  (provider === "opencode" || provider === "codetutor") && (!cost || cost.input === 0)
 
 type ModelState = ReturnType<typeof useLocal>["model"]
 type ModelItem = ReturnType<ModelState["list"]>[number]
@@ -32,9 +32,22 @@ type ModelItem = ReturnType<ModelState["list"]>[number]
 const modelKey = (model: ModelItem) => `${model.provider.id}:${model.id}`
 const manageKey = "action:manage"
 
+const owner = (model: ModelItem) => {
+  const value = model.id.split("/")[0]
+  return value ? value[0].toUpperCase() + value.slice(1) : "CodeTutor"
+}
+
+const modelGroup = (model: ModelItem) =>
+  model.provider.id === "codetutor" ? owner(model) : `Personal · ${model.provider.name}`
+
+const unavailable = (model: ModelItem) =>
+  model.provider.id === "codetutor" && (!model.capabilities.output.text || model.limit.output === 0)
+
 const sortModelGroups = (a: { category: string; items: ModelItem[] }, b: { category: string; items: ModelItem[] }) => {
-  const aIndex = popularProviders.indexOf(a.category)
-  const bIndex = popularProviders.indexOf(b.category)
+  const aIndex = popularProviders.indexOf(a.items[0].provider.id)
+  const bIndex = popularProviders.indexOf(b.items[0].provider.id)
+  if (a.items[0].provider.id === "codetutor" && b.items[0].provider.id !== "codetutor") return -1
+  if (a.items[0].provider.id !== "codetutor" && b.items[0].provider.id === "codetutor") return 1
   const aPopular = aIndex >= 0
   const bPopular = bIndex >= 0
 
@@ -71,7 +84,7 @@ const ModelList: Component<{
       current={model.current()}
       filterKeys={["provider.name", "name", "id"]}
       sortBy={(a, b) => a.name.localeCompare(b.name)}
-      groupBy={(x) => x.provider.name}
+      groupBy={modelGroup}
       sortGroupsBy={(a, b) => {
         const aProvider = a.items[0].provider.id
         const bProvider = b.items[0].provider.id
@@ -91,6 +104,7 @@ const ModelList: Component<{
         </Tooltip>
       )}
       onSelect={(x) => {
+        if (x && unavailable(x)) return
         model.set(x ? { modelID: x.id, providerID: x.provider.id } : undefined, {
           recent: true,
         })
@@ -99,7 +113,7 @@ const ModelList: Component<{
     >
       {(i) => (
         <div class="w-full flex items-center gap-x-2 text-13-regular">
-          <span class="truncate">{i.name}</span>
+          <span class="truncate" classList={{ "opacity-50": unavailable(i) }}>{i.name}</span>
           <Show when={isFree(i.provider.id, i.cost)}>
             <Tag>{language.t("model.tag.free")}</Tag>
           </Show>
@@ -130,8 +144,6 @@ export function ModelSelectorPopover(props: {
     dismiss: null,
   })
   const dialog = useDialog()
-  const local = useLocal()
-  const directory = () => decode64(local.slug())
 
   const close = (dismiss: Dismiss) => {
     setStore("dismiss", dismiss)
@@ -145,12 +157,6 @@ export function ModelSelectorPopover(props: {
     })
   }
 
-  const handleConnectProvider = () => {
-    close("provider")
-    void import("./dialog-connect-provider").then((x) => {
-      void dialog.show(() => <x.DialogConnectProvider directory={directory} />)
-    })
-  }
   const language = useLanguage()
 
   return (
@@ -193,16 +199,6 @@ export function ModelSelectorPopover(props: {
             class="p-1"
             action={
               <div class="flex items-center gap-1">
-                <Tooltip placement="top" value={language.t("command.provider.connect")}>
-                  <IconButton
-                    icon="plus-small"
-                    variant="ghost"
-                    iconSize="normal"
-                    class="size-6"
-                    aria-label={language.t("command.provider.connect")}
-                    onClick={handleConnectProvider}
-                  />
-                </Tooltip>
                 <Tooltip placement="top" value={language.t("dialog.model.manage")}>
                   <IconButton
                     icon="sliders"
@@ -273,18 +269,30 @@ function createModelSelectorController(input: {
         : allModels()
       return [...filtered].sort((a, b) => a.name.localeCompare(b.name))
     },
-    groups: (models: ModelItem[]) => {
+    groups: (models: ModelItem[], search = "") => {
       const byProvider = new Map<string, ModelItem[]>()
-      for (const item of models) {
-        byProvider.set(item.provider.id, [...(byProvider.get(item.provider.id) ?? []), item])
+      const recent = search.trim()
+        ? []
+        : model
+            .recent()
+            .filter(
+              (item): item is ModelItem =>
+                item !== undefined && models.some((model) => modelKey(model) === modelKey(item)),
+            )
+      const recentKeys = new Set(recent.map(modelKey))
+      for (const item of models.filter((item) => !recentKeys.has(modelKey(item)))) {
+        const group = modelGroup(item)
+        byProvider.set(group, [...(byProvider.get(group) ?? []), item])
       }
-      return Array.from(byProvider, ([category, items]) => ({ category, items })).sort(sortModelGroups)
+      const groups = Array.from(byProvider, ([category, items]) => ({ category, items })).sort(sortModelGroups)
+      return recent.length > 0 ? [{ category: "Recent", items: recent }, ...groups] : groups
     },
     current: () => {
       const value = model.current()
       return value ? modelKey(value) : undefined
     },
     select: (item: ModelItem) => {
+      if (unavailable(item)) return
       model.set({ modelID: item.id, providerID: item.provider.id }, { recent: true })
       input.onSelect()
     },
@@ -294,7 +302,7 @@ function createModelSelectorController(input: {
 function ModelSelectorPopoverV2View(props: {
   trigger: ModelSelectorTrigger
   models: (search: string) => ModelItem[]
-  groups: (models: ModelItem[]) => { category: string; items: ModelItem[] }[]
+  groups: (models: ModelItem[], search?: string) => { category: string; items: ModelItem[] }[]
   current: () => string | undefined
   select: (item: ModelItem) => void
   onManage: () => void
@@ -307,8 +315,8 @@ function ModelSelectorPopoverV2View(props: {
   const dismiss = createMenuDismissController(() => contentRef)
 
   const models = createMemo(() => props.models(store.search))
-  const groups = createMemo(() => props.groups(models()))
-  const keys = () => [...models().map(modelKey), manageKey]
+  const groups = createMemo(() => props.groups(models(), store.search))
+  const keys = () => [...models().filter((item) => !unavailable(item)).map(modelKey), manageKey]
   const initialActive = () => {
     const selected = props.current()
     const options = keys()
@@ -332,6 +340,7 @@ function ModelSelectorPopoverV2View(props: {
     setStore({ open: false, search: "", active: "" })
   }
   const selectModel = (item: ModelItem) => {
+    if (unavailable(item)) return
     dismiss.preventTriggerRestore()
     setOpen(false)
     dismiss.afterClose(() => props.select(item))
@@ -451,7 +460,7 @@ function ModelSelectorPopoverV2View(props: {
                   {(group) => (
                     <MenuV2.Group>
                       <MenuV2.GroupLabel class="gap-2 px-3">
-                        <span class="min-w-0 truncate">{group.items[0].provider.name}</span>
+                        <span class="min-w-0 truncate">{group.category}</span>
                       </MenuV2.GroupLabel>
                       <MenuV2.RadioGroup value={props.current()}>
                         <For each={group.items}>
@@ -475,6 +484,7 @@ function ModelSelectorPopoverV2View(props: {
                                 data-option-key={modelKey(item)}
                                 data-selected-model={props.current() === modelKey(item) ? true : undefined}
                                 class="scroll-my-6 w-full"
+                                disabled={unavailable(item)}
                                 classList={{ "!bg-v2-overlay-simple-overlay-hover": store.active === modelKey(item) }}
                                 onMouseEnter={() => {
                                   setStore("active", modelKey(item))
@@ -485,6 +495,15 @@ function ModelSelectorPopoverV2View(props: {
                                 <span class="min-w-0 truncate leading-5">{item.name}</span>
                                 <Show when={isFree(item.provider.id, item.cost)}>
                                   <TagV2 class="shrink-0">{language.t("model.tag.free")}</TagV2>
+                                </Show>
+                                <Show when={item.provider.id === "codetutor" && item.capabilities.toolcall}>
+                                  <TagV2 class="shrink-0">{language.t("model.tag.tools")}</TagV2>
+                                </Show>
+                                <Show when={item.provider.id === "codetutor" && !item.capabilities.toolcall && !unavailable(item)}>
+                                  <TagV2 class="shrink-0">{language.t("model.tag.chatOnly")}</TagV2>
+                                </Show>
+                                <Show when={unavailable(item)}>
+                                  <TagV2 class="shrink-0">{language.t("model.tag.unavailable")}</TagV2>
                                 </Show>
                                 <Show when={item.latest}>
                                   <TagV2 class="shrink-0">{language.t("model.tag.latest")}</TagV2>

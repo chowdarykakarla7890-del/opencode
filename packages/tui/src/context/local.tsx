@@ -32,6 +32,17 @@ export function parseModel(model: string) {
   }
 }
 
+const managedAliases: Record<string, string> = {
+  free: "poolside/laguna-s-2.1-free",
+  fast: "google/gemini-3.1-flash-lite",
+  mentor: "openai/gpt-5.4-mini",
+}
+
+const normalizeModel = (model: { providerID: string; modelID: string }) =>
+  model.providerID === "codetutor" && managedAliases[model.modelID]
+    ? { ...model, modelID: managedAliases[model.modelID] }
+    : model
+
 export function recentModels(
   model: { providerID: string; modelID: string },
   recent: { providerID: string; modelID: string }[],
@@ -62,8 +73,10 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
     const permission = usePermission()
 
     function isModelValid(model: { providerID: string; modelID: string }) {
-      const provider = sync.data.provider.find((item) => item.id === model.providerID)
-      return !!provider?.models[model.modelID]
+      const normalized = normalizeModel(model)
+      const provider = sync.data.provider.find((item) => item.id === normalized.providerID)
+      const info = provider?.models[normalized.modelID]
+      return !!info && info.capabilities.output.text && info.limit.output > 0
     }
 
     function getFirstValidModel(...modelFns: (() => { providerID: string; modelID: string } | undefined)[]) {
@@ -198,39 +211,24 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
         if (args.model) {
           const { providerID, modelID } = parseModel(args.model)
           if (isModelValid({ providerID, modelID })) {
-            return {
-              providerID,
-              modelID,
-            }
+            return normalizeModel({ providerID, modelID })
           }
         }
 
         if (sync.data.config.model) {
           const { providerID, modelID } = parseModel(sync.data.config.model)
           if (isModelValid({ providerID, modelID })) {
-            return {
-              providerID,
-              modelID,
-            }
+            return normalizeModel({ providerID, modelID })
           }
         }
 
         for (const item of modelStore.recent) {
           if (isModelValid(item)) {
-            return item
+            return normalizeModel(item)
           }
         }
 
-        const provider = sync.data.provider[0]
-        if (!provider) return undefined
-        const defaultModel = sync.data.provider_default[provider.id]
-        const firstModel = Object.values(provider.models)[0]
-        const model = defaultModel ?? firstModel?.id
-        if (!model) return undefined
-        return {
-          providerID: provider.id,
-          modelID: model,
-        }
+        return undefined
       })
 
       const currentModel = createMemo(() => {

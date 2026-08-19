@@ -11,7 +11,7 @@ export const corsHeaders = (request: Request): Record<string, string> => {
   if (!origin || !allowedOrigins().has(origin)) return {}
   return {
     "access-control-allow-headers": "authorization, content-type",
-    "access-control-allow-methods": "GET, POST, OPTIONS",
+    "access-control-allow-methods": "GET, PATCH, POST, DELETE, OPTIONS",
     "access-control-allow-origin": origin,
     vary: "Origin",
   }

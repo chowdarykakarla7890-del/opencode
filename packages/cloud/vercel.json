@@ -10,6 +10,14 @@
       "destination": "/api/services?route=billing-portal"
     },
     {
+      "source": "/api/billing/topup",
+      "destination": "/api/services?route=billing-topup"
+    },
+    {
+      "source": "/api/billing/change-plan",
+      "destination": "/api/services?route=billing-change-plan"
+    },
+    {
       "source": "/api/billing/webhook",
       "destination": "/api/services?route=billing-webhook"
     },

@@ -78,6 +78,6 @@ describe("cloud handlers", () => {
     expect(response.status).toBe(200)
     const body = (await response.json()) as { plans: { id: string; limits: { requests_monthly: number } }[] }
     expect(body.plans.map((plan) => plan.id)).toEqual(["free", "starter", "pro"])
-    expect(body.plans.find((plan) => plan.id === "pro")?.limits.requests_monthly).toBe(4_000)
+    expect(body.plans.find((plan) => plan.id === "pro")?.limits.requests_monthly).toBe(20_000)
   })
 })

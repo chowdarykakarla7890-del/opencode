@@ -1,9 +1,8 @@
 import { createMemo, createSignal } from "solid-js"
 import { useLocal } from "../context/local"
-import { map, pipe, flatMap, entries, filter, sortBy, take } from "remeda"
+import { map, pipe, flatMap, entries, filter, sortBy } from "remeda"
 import { DialogSelect } from "../ui/dialog-select"
 import { useDialog } from "../ui/dialog"
-import { createDialogProviderOptions, DialogProvider } from "./dialog-provider"
 import { DialogVariant } from "./dialog-variant"
 import * as fuzzysort from "fuzzysort"
 import { useConnected } from "./use-connected"
@@ -16,9 +15,26 @@ export function DialogModel(props: { providerID?: string }) {
   const [query, setQuery] = createSignal("")
 
   const connected = useConnected()
-  const providers = createDialogProviderOptions()
 
   const showExtra = createMemo(() => connected() && !props.providerID)
+
+  const owner = (modelID: string) => {
+    const value = modelID.split("/")[0]
+    return value ? value[0].toUpperCase() + value.slice(1) : "CodeTutor"
+  }
+
+  const managedFooter = (model: (typeof sync.data.provider)[number]["models"][string]) => {
+    const labels = [
+      model.cost?.input === 0 ? "Free" : undefined,
+      model.capabilities?.toolcall ? "Tools" : "Chat only",
+      model.capabilities?.reasoning ? "Reasoning" : undefined,
+      model.capabilities?.input?.image ? "Vision" : undefined,
+    ].filter((value): value is string => Boolean(value))
+    return labels.join(" · ")
+  }
+
+  const managedDisabled = (providerID: string, model: (typeof sync.data.provider)[number]["models"][string]) =>
+    providerID === "codetutor" && (!model.capabilities?.output?.text || model.limit?.output === 0)
 
   const options = createMemo(() => {
     const needle = query().trim()
@@ -38,10 +54,15 @@ export function DialogModel(props: { providerID?: string }) {
             key: item,
             value: { providerID: provider.id, modelID: model.id },
             title: model.name ?? item.modelID,
-            description: provider.name,
+            description: provider.id === "codetutor" ? owner(model.id) : provider.name,
             category,
-            disabled: provider.id === "opencode" && model.id.includes("-nano"),
-            footer: model.cost?.input === 0 && provider.id === "opencode" ? "Free" : undefined,
+            disabled: managedDisabled(provider.id, model) || (provider.id === "opencode" && model.id.includes("-nano")),
+            footer:
+              provider.id === "codetutor"
+                ? managedFooter(model)
+                : model.cost?.input === 0 && provider.id === "opencode"
+                  ? "Free"
+                  : undefined,
             onSelect: () => {
               onSelect(provider.id, model.id)
             },
@@ -77,9 +98,18 @@ export function DialogModel(props: { providerID?: string }) {
             description: favorites.some((item) => item.providerID === provider.id && item.modelID === model)
               ? "(Favorite)"
               : undefined,
-            category: connected() ? provider.name : undefined,
-            disabled: provider.id === "opencode" && model.includes("-nano"),
-            footer: info.cost?.input === 0 && provider.id === "opencode" ? "Free" : undefined,
+            category: connected()
+              ? provider.id === "codetutor"
+                ? owner(info.id)
+                : `Personal · ${provider.name}`
+              : undefined,
+            disabled: managedDisabled(provider.id, info) || (provider.id === "opencode" && model.includes("-nano")),
+            footer:
+              provider.id === "codetutor"
+                ? managedFooter(info)
+                : info.cost?.input === 0 && provider.id === "opencode"
+                  ? "Free"
+                  : undefined,
             onSelect() {
               onSelect(provider.id, model)
             },
@@ -105,28 +135,14 @@ export function DialogModel(props: { providerID?: string }) {
       ),
     )
 
-    const popularProviders = !connected()
-      ? pipe(
-          providers(),
-          map((option) => ({
-            ...option,
-            category: "Popular providers",
-          })),
-          take(6),
-        )
-      : []
-
     if (needle) {
-      return [
-        ...sortModelOptions(
-          fuzzysort.go(needle, providerOptions, { keys: ["title", "category"] }).map((x) => x.obj),
-          false,
-        ),
-        ...fuzzysort.go(needle, popularProviders, { keys: ["title"] }).map((x) => x.obj),
-      ]
+      return sortModelOptions(
+        fuzzysort.go(needle, providerOptions, { keys: ["title", "category"] }).map((x) => x.obj),
+        false,
+      )
     }
 
-    return [...favoriteOptions, ...recentOptions, ...providerOptions, ...popularProviders]
+    return [...favoriteOptions, ...recentOptions, ...providerOptions]
   })
 
   const provider = createMemo(() =>
@@ -158,13 +174,6 @@ export function DialogModel(props: { providerID?: string }) {
     <DialogSelect<ReturnType<typeof options>[number]["value"]>
       options={options()}
       actions={[
-        {
-          command: "model.dialog.provider",
-          title: connected() ? "Connect provider" : "View all providers",
-          onTrigger() {
-            dialog.replace(() => <DialogProvider />)
-          },
-        },
         {
           command: "model.dialog.favorite",
           title: "Favorite",

@@ -32,6 +32,12 @@ import path from "path"
 import { useKV } from "./kv"
 import { usePermission } from "./permission"
 
+const explicitPermissions = new Set(["edit", "bash", "external_directory", "destructive", "elevated", "network"])
+
+export function permissionRequiresConfirmation(permission: string) {
+  return explicitPermissions.has(permission)
+}
+
 function search<T>(items: T[], target: string, key: (item: T) => string) {
   let left = 0
   let right = items.length - 1
@@ -187,7 +193,8 @@ export const {
 
         case "permission.asked": {
           const request = event.properties
-          if (permission.mode === "auto") {
+          const requiresConfirmation = permissionRequiresConfirmation(request.permission)
+          if (permission.mode === "auto" && !requiresConfirmation) {
             void sdk.client.permission.reply({
               requestID: request.id,
               reply: "once",

@@ -17,6 +17,16 @@ type Store = {
 }
 
 const RECENT_LIMIT = 5
+const managedAliases: Record<string, string> = {
+  free: "poolside/laguna-s-2.1-free",
+  fast: "google/gemini-3.1-flash-lite",
+  mentor: "openai/gpt-5.4-mini",
+}
+
+const normalizeModel = (model: ModelKey) =>
+  model.providerID === "codetutor" && managedAliases[model.modelID]
+    ? { ...model, modelID: managedAliases[model.modelID] }
+    : model
 
 function modelKey(model: ModelKey) {
   return `${model.providerID}:${model.modelID}`
@@ -40,7 +50,11 @@ export const { use: useModels, provider: ModelsProvider } = createSimpleContext(
     const available = createMemo(() =>
       providers.connected().flatMap((p) =>
         Object.values(p.models)
-          .filter((m) => m.capabilities.toolcall && m.capabilities.input.text && m.capabilities.output.text)
+          .filter((m) =>
+            p.id === "codetutor"
+              ? true
+              : m.capabilities.toolcall && m.capabilities.input.text && m.capabilities.output.text,
+          )
           .map((m) => ({
             ...m,
             provider: p,
@@ -103,7 +117,10 @@ export const { use: useModels, provider: ModelsProvider } = createSimpleContext(
       })),
     )
 
-    const find = (key: ModelKey) => list().find((m) => m.id === key.modelID && m.provider.id === key.providerID)
+    const find = (key: ModelKey) => {
+      const normalized = normalizeModel(key)
+      return list().find((m) => m.id === normalized.modelID && m.provider.id === normalized.providerID)
+    }
 
     function update(model: ModelKey, state: Visibility) {
       const index = store.user.findIndex((x) => x.modelID === model.modelID && x.providerID === model.providerID)
@@ -130,7 +147,7 @@ export const { use: useModels, provider: ModelsProvider } = createSimpleContext(
     }
 
     const push = (model: ModelKey) => {
-      const uniq = uniqueBy([model, ...store.recent], (x) => `${x.providerID}:${x.modelID}`)
+      const uniq = uniqueBy([normalizeModel(model), ...store.recent.map(normalizeModel)], (x) => `${x.providerID}:${x.modelID}`)
       if (uniq.length > RECENT_LIMIT) uniq.pop()
       setStore("recent", uniq)
     }

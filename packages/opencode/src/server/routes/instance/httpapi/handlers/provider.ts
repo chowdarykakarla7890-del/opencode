@@ -44,6 +44,8 @@ export const providerHandlers = HttpApiBuilder.group(InstanceHttpApi, "provider"
       const enabled = config.enabled_providers ? new Set(config.enabled_providers) : undefined
       const filtered: Record<string, (typeof all)[string]> = {}
       for (const [key, value] of Object.entries(all)) {
+        const testing = process.env.CODETUTOR_TEST_HOME && process.env.CODETUTOR_INTERNAL_TESTING === "1"
+        if (!testing && key !== "codetutor") continue
         if ((enabled ? enabled.has(key) : true) && !disabled.has(key)) filtered[key] = value
       }
       const connected = yield* provider.list()

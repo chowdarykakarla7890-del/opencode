@@ -409,7 +409,7 @@ it.live("config sends the selected org header", () =>
   }),
 )
 
-it.live("poll stores the account and first org on success", () =>
+it.live("poll stores a personal account without selecting an organization", () =>
   Effect.gen(function* () {
     const client = HttpClient.make((req) =>
       Effect.succeed(
@@ -440,7 +440,7 @@ it.live("poll stores the account and first org on success", () =>
       expect.objectContaining({
         id: "user-1",
         email: "user@example.com",
-        active_org_id: "org-1",
+        active_org_id: null,
       }),
     )
   }),

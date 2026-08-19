@@ -71,7 +71,7 @@ it.instance("subagent's own read-only restriction remains effective", () =>
 )
 
 it.instance(
-  "custom subagent can explicitly enable edits denied to its parent agent",
+  "custom subagent edits still require confirmation when enabled",
   () =>
     Effect.gen(function* () {
       const planAgent = yield* Agent.use.get("plan")
@@ -87,7 +87,7 @@ it.instance(
       const effective = Permission.merge(my!.permission, subagentSessionPermission)
 
       expect(Permission.evaluate("edit", "/some/file.ts", planAgent!.permission).action).toBe("deny")
-      expect(Permission.evaluate("edit", "/some/file.ts", effective).action).toBe("allow")
+      expect(Permission.evaluate("edit", "/some/file.ts", effective).action).toBe("ask")
       expect(Permission.disabled(["edit", "write", "apply_patch"], effective)).toEqual(new Set())
     }),
   {

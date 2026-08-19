@@ -6,7 +6,7 @@ import { makeEventListener } from "@solid-primitives/event-listener"
 import { type Accessor, batch, createMemo, createResource, onCleanup, onMount } from "solid-js"
 import { createApiForServer, createSdkForServer, type ServerApi } from "@/utils/server"
 import { useLanguage } from "./language"
-import { usePlatform } from "./platform"
+import { type Platform, usePlatform } from "./platform"
 import { ServerConnection, useServer } from "./server"
 import { createRefCountMap } from "@/utils/refcount"
 import { useGlobal } from "./global"
@@ -164,6 +164,21 @@ export function resumeStreamAfterPageShow(event: PageTransitionEvent, start: () 
   start()
 }
 
+export function eventFetchForPlatform(
+  platform: Pick<Platform, "platform" | "fetch">,
+  server: ServerConnection.Any,
+) {
+  if (!platform.fetch) return
+  if (platform.platform === "web") return platform.fetch
+  try {
+    const url = new URL(server.http.url)
+    const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1"
+    if (url.protocol === "http:" && !loopback) return platform.fetch
+  } catch {
+    return
+  }
+}
+
 type ServerEventEmitter = ReturnType<typeof createGlobalEmitter<{ [key: string]: ServerEvent }>>
 type ServerSDKBase = {
   server: ServerConnection.Any
@@ -188,16 +203,7 @@ function createServerSdkContextBase(server: ServerConnection.Any, scope: ServerS
   const platform = usePlatform()
   const abort = new AbortController()
 
-  const eventFetch = (() => {
-    if (!platform.fetch || !server) return
-    try {
-      const url = new URL(server.http.url)
-      const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1"
-      if (url.protocol === "http:" && !loopback) return platform.fetch
-    } catch {
-      return
-    }
-  })()
+  const eventFetch = eventFetchForPlatform(platform, server)
 
   const eventApi = createApiForServer({ server: server.http, fetch: eventFetch })
   const eventSdk = createSdkForServer({

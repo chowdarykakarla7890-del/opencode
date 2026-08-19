@@ -62,6 +62,7 @@ function forkStderrDrain(stream: ReadableStream<Uint8Array>, into: string[]) {
 function isolatedEnv(home: string, configJson: string): Record<string, string> {
   return {
     CODETUTOR_TEST_HOME: home,
+    CODETUTOR_INTERNAL_TESTING: "1",
     HOME: home,
     XDG_CONFIG_HOME: path.join(home, ".config"),
     XDG_DATA_HOME: path.join(home, ".local/share"),

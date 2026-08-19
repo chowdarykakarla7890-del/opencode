@@ -97,6 +97,12 @@ if (!(root instanceof HTMLElement) && import.meta.env.DEV) {
 }
 
 const getCurrentUrl = () => {
+  const requested = new URLSearchParams(location.search).get("server_url")
+  if (requested && URL.canParse(requested)) {
+    const url = new URL(requested)
+    const loopback = url.protocol === "http:" && ["localhost", "127.0.0.1", "::1"].includes(url.hostname)
+    if (loopback) return url.origin
+  }
   if (import.meta.env.VITE_DEFAULT_SERVER_URL) return import.meta.env.VITE_DEFAULT_SERVER_URL
   if (import.meta.env.DEV)
     return `http://${import.meta.env.VITE_CODETUTOR_SERVER_HOST ?? "localhost"}:${import.meta.env.VITE_CODETUTOR_SERVER_PORT ?? "4096"}`
@@ -111,8 +117,9 @@ const getDefaultUrl = () => {
 
 const clearAuthToken = () => {
   const params = new URLSearchParams(location.search)
-  if (!params.has("auth_token")) return
+  if (!params.has("auth_token") && !params.has("server_url")) return
   params.delete("auth_token")
+  params.delete("server_url")
   history.replaceState(null, "", location.pathname + (params.size ? `?${params}` : "") + location.hash)
 }
 
@@ -122,7 +129,7 @@ const browserFetch: typeof fetch = Object.assign(
     const url = new URL(href, location.href)
     const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1"
     if (!loopback) return fetch(input, init)
-    return fetch(input, { ...init, targetAddressSpace: "local" } as RequestInit & { targetAddressSpace: "local" })
+    return fetch(input, { ...init, targetAddressSpace: "loopback" } as RequestInit & { targetAddressSpace: "loopback" })
   },
   { preconnect: fetch.preconnect },
 )

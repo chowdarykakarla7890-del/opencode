@@ -1,36 +1,28 @@
-import { afterEach, describe, expect, test } from "bun:test"
+import { describe, expect, test } from "bun:test"
 import { accountRequiredForArgs } from "../../src/cli/account-required"
 
-const original = process.env.CODETUTOR_ACCOUNT_REQUIRED
-
-afterEach(() => {
-  if (original === undefined) delete process.env.CODETUTOR_ACCOUNT_REQUIRED
-  if (original !== undefined) process.env.CODETUTOR_ACCOUNT_REQUIRED = original
-})
+const required = (args: string[]) => accountRequiredForArgs(args, false)
 
 describe("CLI account rollout", () => {
-  test("does not gate anything until explicitly enabled", () => {
-    delete process.env.CODETUTOR_ACCOUNT_REQUIRED
-    expect(accountRequiredForArgs([])).toBeFalse()
-    expect(accountRequiredForArgs(["learn"])).toBeFalse()
+  test("keeps the interactive shell and local learning available", () => {
+    expect(required([])).toBeFalse()
+    expect(required(["learn"])).toBeFalse()
+    expect(required(["web"])).toBeFalse()
   })
 
-  test("gates primary tutoring experiences", () => {
-    process.env.CODETUTOR_ACCOUNT_REQUIRED = "1"
-    expect(accountRequiredForArgs([])).toBeTrue()
-    expect(accountRequiredForArgs(["."])).toBeTrue()
-    expect(accountRequiredForArgs(["learn"])).toBeTrue()
-    expect(accountRequiredForArgs(["run", "teach me"])).toBeTrue()
-    expect(accountRequiredForArgs(["web"])).toBeTrue()
+  test("gates direct AI operations by default", () => {
+    expect(required(["."])).toBeTrue()
+    expect(required(["run", "teach me"])).toBeTrue()
+    expect(required(["generate"])).toBeTrue()
   })
 
   test("keeps login, setup, recovery, and help available", () => {
-    process.env.CODETUTOR_ACCOUNT_REQUIRED = "1"
-    expect(accountRequiredForArgs(["account", "login"])).toBeFalse()
-    expect(accountRequiredForArgs(["providers"])).toBeFalse()
-    expect(accountRequiredForArgs(["--log-level", "DEBUG", "account", "login"])).toBeFalse()
-    expect(accountRequiredForArgs(["debug"])).toBeFalse()
-    expect(accountRequiredForArgs(["upgrade"])).toBeFalse()
-    expect(accountRequiredForArgs(["--help"])).toBeFalse()
+    expect(required(["account", "login"])).toBeFalse()
+    expect(required(["providers"])).toBeFalse()
+    expect(required(["mcp", "add"])).toBeFalse()
+    expect(required(["--log-level", "DEBUG", "account", "login"])).toBeFalse()
+    expect(required(["debug"])).toBeFalse()
+    expect(required(["upgrade"])).toBeFalse()
+    expect(required(["--help"])).toBeFalse()
   })
 })

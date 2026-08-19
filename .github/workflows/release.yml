@@ -90,7 +90,7 @@ jobs:
         run: |
           CODETUTOR_DRY_RUN=1 bun run script/publish.ts
           prefix="$(mktemp -d)"
-          npm install --prefix "$prefix" --ignore-scripts ./dist/codetutor/*.tgz ./dist/codetutor-linux-x64-musl/*.tgz
+          npm install --prefix "$prefix" --ignore-scripts --force ./dist/codetutor/*.tgz ./dist/codetutor-linux-x64-musl/*.tgz
           node "$prefix/node_modules/codetutor/postinstall.mjs"
           "$prefix/node_modules/.bin/codetutor" --version
       - uses: actions/upload-artifact@v4
